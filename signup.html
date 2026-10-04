@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Account - PrintHub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#0a0a0a;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+.card{background:#111;border:1px solid #222;border-radius:20px;padding:35px 30px;width:100%;max-width:380px;box-shadow:0 10px 40px rgba(0,0,0,0.6)}
+h1{text-align:center;font-size:28px;font-weight:900;margin-bottom:6px}
+.sub{text-align:center;color:#888;font-size:13px;margin-bottom:25px}
+label{font-size:13px;color:#ccc;margin-bottom:6px;display:block;font-weight:600}
+.input-wrap{position:relative;margin-bottom:18px}
+input{width:100%;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:12px;padding:13px 45px 13px 14px;color:#fff;font-size:14px;outline:none}
+input:focus{border-color:#f9c23c}
+.eyeBtn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:22px;color:#fff !important;filter:drop-shadow(0 0 2px #fff);user-select:none}
+.signBtn{width:100%;background:#f9c23c;color:#000;border:none;border-radius:12px;padding:13px;font-weight:900;font-size:15px;cursor:pointer;margin-top:5px}
+.signBtn:hover{background:#ffcc55}
+.bottom{ text-align:center;margin-top:18px;font-size:13px;color:#888}
+.bottom a{color:#f9c23c;text-decoration:none;font-weight:800}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Create Account</h1>
+  <div class="sub">Join PrintHub and start printing</div>
+
+  <label>Full Name</label>
+  <div class="input-wrap">
+    <input type="text" id="fullName" placeholder="John Doe" value="Marven Abiso">
+  </div>
+
+  <label>Email</label>
+  <div class="input-wrap">
+    <input type="email" id="email" placeholder="you@email.com" value="marvenabiso@gmail.com">
+  </div>
+
+  <label>Password</label>
+  <div class="input-wrap">
+    <input type="password" id="password" placeholder="••••••">
+    <button type="button" class="eyeBtn" id="eyeBtn" onclick="togglePass()">🙈</button>
+  </div>
+
+  <button class="signBtn" id="signupBtn">Sign Up</button>
+
+  <div class="bottom">Already have an account? <a href="login.html">Login</a></div>
+</div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+
+window.togglePass = function(){
+  const inp = document.getElementById('password');
+  const btn = document.getElementById('eyeBtn');
+  if(inp.type === 'password'){
+    inp.type = 'text';
+    btn.textContent = '🙉'; // monkey kita na password
+  }else{
+    inp.type = 'password';
+    btn.textContent = '🙈'; // monkey takpan mata
+  }
+}
+
+document.getElementById('signupBtn').onclick = async () => {
+  const fullName = document.getElementById('fullName').value;
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  if(!fullName || !email || !password){ alert('Fill up lahat!'); return; }
+
+  const { data, error } = await supabase.auth.signUp({
+    email, password,
+    options: { data: { full_name: fullName } }
+  });
+  if(error){ alert(error.message); }
+  else{ alert('Account created! Check email mo'); location.href='login.html'; }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PrintHub - Your Online Print Shop</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#0a0a0a;color:#fff;min-height:100vh;scroll-behavior:smooth}
+    header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0f0f0f;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:10}
+   .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px}
+   .logo-icon{width:32px;height:32px;background:#f9c23c;border-radius:8px;display:grid;place-items:center;color:#000}
+    nav{display:flex;gap:20px}
+    nav a{color:#aaa;text-decoration:none;font-size:13px;cursor:pointer;transition:.2s}
+    nav a.active{color:#f9c23c;font-weight:900}
+   .right{display:flex;align-items:center;gap:14px;position:relative}
+    #welcomeText{font-size:13px;color:#f9c23c;font-weight:800;display:none}
+    #topBtn{background:#f9c23c;color:#000;border:none;padding:9px 16px;border-radius:9px;font-weight:900;cursor:pointer;font-size:13px}
+   .hero{text-align:center;padding:80px 20px 40px}
+   .hero h1{font-size:32px;font-weight:900;margin-bottom:8px}
+   .hero p{color:#888;font-size:13px;margin-bottom:28px}
+   .cards{display:flex;gap:14px;justify-content:center;max-width:900px;margin:0 auto 22px;flex-wrap:wrap}
+   .card{background:#151515;border:1px solid #222;border-radius:14px;padding:18px;width:250px;text-align:center}
+   .card-icon{width:48px;height:48px;border:1px solid #f9c23c;border-radius:12px;display:grid;place-items:center;margin:0 auto 10px;font-size:20px}
+   .card h3{font-size:13px;margin-bottom:4px}
+   .card p{font-size:11px;color:#777;line-height:1.4}
+    #middleBtn{background:#f9c23c;color:#000;border:none;padding:12px 22px;border-radius:12px;font-weight:900;cursor:pointer;margin:10px auto 40px;display:none}
+   .how{display:flex;gap:24px;max-width:900px;margin:0 auto;background:#121212;border:1px solid #1f1f1f;border-radius:18px;padding:30px 18px;align-items:center}
+   .how img{width:320px;border-radius:14px;object-fit:cover}
+   .how h2{font-size:16px;margin-bottom:14px}
+   .step{display:flex;gap:10px;margin-bottom:12px}
+   .num{width:24px;height:24px;background:#f9c23c;color:#000;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:11px;flex-shrink:0}
+   .step h4{font-size:12px}
+   .step p{font-size:10px;color:#888}
+   .secWrap{padding:90px 0 40px; min-height:80vh}
+   .secTitle{max-width:900px;margin:0 auto 15px;padding:0 20px;font-size:20px;font-weight:900;color:#f9c23c}
+    #notifBell{position:relative;cursor:pointer;font-size:22px;display:none;user-select:none}
+    #notifCount{position:absolute;top:-6px;right:-8px;background:red;color:white;font-size:10px;padding:2px 6px;border-radius:50%;font-weight:900;display:none}
+    #notifDropdown{display:none;position:absolute;right:0;top:38px;width:310px;background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:12px;z-index:100;box-shadow:0 10px 30px rgba(0,0,0,0.6)}
+    #ordersList{max-width:900px;margin:0 auto;padding:0 20px}
+   .orderItem{background:#151515;border:1px solid #222;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+   .badge{padding:4px 8px;border-radius:6px;font-size:10px;font-weight:900}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo"><div class="logo-icon">🖨️</div> PrintHub</div>
+    <nav>
+      <a id="n0" class="active" onclick="goTo('home')">Home</a>
+      <a id="n1" onclick="goTo('how')">How It Works</a>
+      <a id="n2" onclick="goTo('services')">Services</a>
+      <a id="n3" onclick="goTo('pricing')">Pricing</a>
+      <a id="n4" onclick="goTo('help')">Help</a>
+      <a id="n5" onclick="goTo('orders')" style="display:none">My Orders</a>
+    </nav>
+    <div class="right">
+      <div id="notifBell" onclick="toggleNotif()">🔔<span id="notifCount">0</span>
+        <div id="notifDropdown" onclick="event.stopPropagation()">
+          <b style="color:#f9c23c;font-size:13px">Notifications</b>
+          <div id="notifList" style="margin-top:10px"><p style="color:#666;font-size:12px">No new notifications</p></div>
+        </div>
+      </div>
+      <span id="welcomeText"></span>
+      <button id="topBtn">Get Started</button>
+    </div>
+  </header>
+
+  <div id="home" class="hero">
+    <h1>PrintHub - Your Online Print Shop</h1>
+    <p>Fast, affordable, and reliable prints — made simple for students & professionals.</p>
+    <button id="middleBtn">Get Started — Order Now →</button>
+  </div>
+
+  <div id="how" class="secWrap">
+    <div class="how" style="margin:0 auto">
+      <img src="illustration.jpg" alt="illustration">
+      <div>
+        <h2>How it works in 3 simple steps</h2>
+        <div class="step"><div class="num">1</div><div><h4>Upload Your File</h4><p>PDF, JPG, DOCX — drag & drop or browse your file.</p></div></div>
+        <div class="step"><div class="num">2</div><div><h4>Pay via GCash/PayMaya</h4><p>Secure payment in seconds through GCash or PayMaya.</p></div></div>
+        <div class="step"><div class="num">3</div><div><h4>Pickup or Delivery</h4><p>Collect at nearest shop or get it delivered to you.</p></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="services" class="secWrap">
+    <div class="secTitle">Our Services</div>
+    <div class="cards">
+      <div class="card"><div class="card-icon">📄</div><h3>Print Documents</h3><p>Essays, reports, notes.<br>Black & white or color.</p></div>
+      <div class="card"><div class="card-icon">🖼️</div><h3>Photo Prints</h3><p>Vivid photos for memories & presentations.</p></div>
+      <div class="card"><div class="card-icon">🪪</div><h3>ID/Business</h3><p>ID photos, business cards, flyers.</p></div>
+    </div>
+  </div>
+
+  <div id="pricing" class="secWrap" style="background:#0f0f0f">
+    <div class="secTitle">Pricing — Affordable for Students</div>
+    <div class="cards">
+      <div class="card"><div class="card-icon">💵</div><h3>Black & White</h3><p>₱2 per page - A4 70gsm<br>₱1.50 if 100+ pages bulk</p></div>
+      <div class="card"><div class="card-icon">🎨</div><h3>Colored Print</h3><p>₱5 per page - Vivid colors<br>Perfect for presentations</p></div>
+      <div class="card"><div class="card-icon">📸</div><h3>Photo Print 4R</h3><p>₱15 per piece - Glossy premium<br>Waterproof & long lasting</p></div>
+    </div>
+  </div>
+
+  <div id="help" class="secWrap" style="min-height:60vh; padding-bottom:60px">
+    <div class="secTitle">Help Center</div>
+    <div class="cards">
+      <div class="card"><div class="card-icon">📍</div><h3>Location</h3><p>San Carlos<br>Pickup & Maxim delivery</p></div>
+      <div class="card"><div class="card-icon">📁</div><h3>Files Accepted</h3><p>PDF, DOCX, JPG, PNG - max 25MB</p></div>
+      <div class="card"><div class="card-icon">📧</div><h3>Contact Us</h3><p>printhub.marvenabiso@gmail.com<br>FB: PrintHub Bacolod</p></div>
+    </div>
+  </div>
+
+  <div id="orders" class="secWrap" style="background:#0a0a0a;display:none">
+    <div class="secTitle">My Orders</div>
+    <div id="ordersList"></div>
+  </div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+const topBtn = document.getElementById('topBtn');
+const middleBtn = document.getElementById('middleBtn');
+const welcomeText = document.getElementById('welcomeText');
+const notifBell = document.getElementById('notifBell');
+const notifCount = document.getElementById('notifCount');
+const notifDropdown = document.getElementById('notifDropdown');
+const notifList = document.getElementById('notifList');
+const ordersSec = document.getElementById('orders');
+const ordersList = document.getElementById('ordersList');
+const navOrders = document.getElementById('n5');
+const ADMIN_EMAIL = "johnreysumingit53@gmail.com";
+
+const { data: { session } } = await supabase.auth.getSession();
+
+if(session){
+  const user = session.user;
+  const email = user.email.toLowerCase();
+  if(email === ADMIN_EMAIL){
+    window.location.href = 'admin.html';
+  }
+  let raw = user.user_metadata?.full_name || user.email.split('@')[0];
+  let displayName = raw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  welcomeText.textContent = `Welcome, ${displayName}`;
+  welcomeText.style.display = 'block';
+  notifBell.style.display = 'block';
+  navOrders.style.display = 'block';
+  ordersSec.style.display = 'block';
+  topBtn.textContent = 'Logout';
+  topBtn.onclick = async () => { await supabase.auth.signOut(); location.reload(); };
+  middleBtn.style.display = 'block';
+  middleBtn.onclick = () => location.href = 'order.html';
+  loadNotifs();
+  loadMyOrders();
+  supabase.channel('orders-realtime-'+user.id).on('postgres_changes', { event:'UPDATE', schema:'public', table:'orders' }, (payload)=>{
+    const s = (payload.new.status || '').toLowerCase();
+    if(s.includes('complet') || s==='done'){
+      if(payload.new.customer_email === user.email){
+        localStorage.removeItem('ph_read_notifs');
+        loadNotifs();
+        loadMyOrders();
+        alert(`✅ ${payload.new.file_name} DONE NA! Ready for pickup!`);
+      }
+    }
+  }).subscribe();
+} else {
+  welcomeText.style.display = 'none';
+  topBtn.textContent = 'Get Started';
+  topBtn.onclick = () => location.href = 'login.html';
+  middleBtn.style.display = 'block';
+  middleBtn.onclick = () => location.href = 'login.html';
+}
+
+async function loadNotifs(){
+  if(!session) return;
+  const readIds = JSON.parse(localStorage.getItem('ph_read_notifs') || '[]');
+  const { data } = await supabase.from('orders').select('*').eq('customer_email', session.user.email).or('status.eq.completed,status.eq.Completed,status.eq.done,status.eq.Done,status.ilike.%complet%').order('created_at',{ascending:false}).limit(10);
+  if(!data || data.length===0){
+    notifList.innerHTML = `<p style="color:#666;font-size:12px">No new notifications</p>`;
+    notifCount.style.display='none';
+    return;
+  }
+  const unread = data.filter(o=>!readIds.includes(o.id));
+  if(unread.length>0){
+    notifCount.style.display='block';
+    notifCount.textContent=unread.length;
+  } else {
+    notifCount.style.display='none';
+  }
+  notifList.innerHTML = data.map(o=>`
+    <div onclick="goToOrders()" style="background:#252525;padding:10px;border-radius:8px;margin-top:8px;cursor:pointer;border-left:3px solid ${readIds.includes(o.id)?'#555':'#00ff88'};opacity:${readIds.includes(o.id)?'0.6':'1'}">
+      <b style="color:${readIds.includes(o.id)?'#888':'#00ff88'};font-size:12px">${readIds.includes(o.id)?'Seen - Print Done' : '✅ Print Done!'}</b>
+      <p style="margin:4px 0;font-size:12px;color:white">${o.file_name}</p>
+      <small style="color:#888;font-size:11px">${readIds.includes(o.id)?'Already seen':'Ready for pickup - Click to view'}</small>
+    </div>
+  `).join('');
+}
+
+async function loadMyOrders(){
+  if(!session) return;
+  const { data } = await supabase.from('orders').select('*').eq('customer_email', session.user.email).order('created_at',{ascending:false});
+  if(!data || data.length===0){
+    ordersList.innerHTML=`<p style="text-align:center;color:#666">Wala ka pang orders boss</p>`;
+    return;
+  }
+  ordersList.innerHTML = data.map(o=>{
+    const isDone = o.status.toLowerCase().includes('complet') || o.status.toLowerCase()==='done';
+    return `
+    <div class="orderItem">
+      <div><b style="font-size:13px">${o.file_name}</b><br><small style="color:#888">${o.print_type} • ₱${o.amount} • ${o.payment_method}</small></div>
+      <span class="badge" style="${isDone? 'background:#00ff88;color:#000' : 'background:#f9c23c;color:#000'}">${o.status.toUpperCase()}</span>
+    </div>
+  `}).join('');
+}
+
+window.toggleNotif = () => {
+  const isOpening = notifDropdown.style.display!== 'block';
+  notifDropdown.style.display = isOpening? 'block' : 'none';
+  if(isOpening){
+    loadNotifs();
+    setTimeout(async ()=>{
+      const { data } = await supabase.from('orders').select('id').eq('customer_email', session.user.email).or('status.eq.completed,status.eq.Completed,status.eq.done,status.eq.Done,status.ilike.%complet%');
+      if(data) localStorage.setItem('ph_read_notifs', JSON.stringify(data.map(o=>o.id)));
+      notifCount.style.display='none';
+    }, 1000);
+  }
+}
+
+window.goToOrders = () => {
+  notifDropdown.style.display='none';
+  supabase.from('orders').select('id').eq('customer_email', session.user.email).or('status.eq.completed,status.eq.Completed,status.eq.done,status.eq.Done,status.ilike.%complet%').then(({data})=>{
+    if(data) localStorage.setItem('ph_read_notifs', JSON.stringify(data.map(o=>o.id)));
+    notifCount.style.display='none';
+  });
+  const y = document.getElementById('orders').getBoundingClientRect().top + window.pageYOffset - 70;
+  window.scrollTo({top:y, behavior:'smooth'});
+  setActive('orders');
+}
+
+window.goTo = function(id){
+  const el = document.getElementById(id);
+  const headerOffset = 70;
+  const y = el.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+  window.scrollTo({top: y, behavior: "smooth"});
+  setActive(id);
+}
+
+const navIds = {home:'n0',how:'n1',services:'n2',pricing:'n3',help:'n4',orders:'n5'};
+function setActive(id){
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  if(navIds[id]) document.getElementById(navIds[id]).classList.add('active');
+}
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      setActive(entry.target.id);
+    }
+  });
+}, { root: null, rootMargin: "-100px 0px -60% 0px", threshold: 0 });
+
+document.querySelectorAll('.secWrap,.hero').forEach(sec => {
+  observer.observe(sec);
+});
+
+document.addEventListener('click', (e)=>{
+  if(!notifBell.contains(e.target)) notifDropdown.style.display='none';
+});
+</script>
+</body>
+</html>

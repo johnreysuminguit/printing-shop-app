@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile - PrintHub</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#0a0a0a;color:#fff;min-height:100vh}
+.header{background:#0f0f0f;border-bottom:1px solid #222;padding:14px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0}
+.header h1{flex:1;text-align:center;font-size:16px;font-weight:900;letter-spacing:1px;margin-right:30px}
+.backBtn{font-size:22px;cursor:pointer;color:#fff;text-decoration:none}
+.section{padding:20px}
+.sectionTitle{font-size:20px;font-weight:900;margin-bottom:20px;color:#fff}
+.item{display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-bottom:1px solid #1e1e1e;cursor:pointer}
+.itemLeft{font-size:14px;font-weight:700;color:#ddd}
+.itemRight{display:flex;align-items:center;gap:12px;color:#888;font-size:13px}
+.arrow{color:#666;font-size:18px}
+.yellowDot{width:8px;height:8px;background:#f9c23c;border-radius:50%;display:inline-block}
+.logout{margin:30px 20px;background:#1a1a1a;border:1px solid #333;color:#ff4444;padding:14px;border-radius:12px;width:calc(100% - 40px);font-weight:900;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <a href="dashboard.html" class="backBtn">←</a>
+  <h1>MY PROFILE</h1>
+</div>
+
+<div class="section">
+  <div class="sectionTitle">Account Management</div>
+
+  <div class="item" onclick="alert('Username: '+ (userName||'Not set'))">
+    <div class="itemLeft">Username</div>
+    <div class="itemRight"><span id="p_username">Loading...</span><span class="arrow">›</span></div>
+  </div>
+
+  <div class="item" onclick="alert('Change password sa Supabase settings')">
+    <div class="itemLeft">Password</div>
+    <div class="itemRight"><span>***********</span><span class="arrow">›</span></div>
+  </div>
+
+  <div class="item" onclick="alert('Email mo yan')">
+    <div class="itemLeft">Email</div>
+    <div class="itemRight"><span id="p_email">Loading...</span><span class="yellowDot"></span><span class="arrow">›</span></div>
+  </div>
+</div>
+
+<button class="logout" id="logoutBtn">Logout</button>
+
+<script type="module">
+import { supabase } from './supabase.js';
+
+let userName = '';
+const { data: { session } } = await supabase.auth.getSession();
+if(!session){ location.href='login.html'; }
+else {
+  const user = session.user;
+  userName = user.user_metadata?.full_name || user.email.split('@')[0];
+  document.getElementById('p_username').textContent = userName;
+  document.getElementById('p_email').textContent = user.email.replace(/(.{3}).+(@.+)/, '$1****$2');
+  // phone kung meron sa metadata
+  document.getElementById('p_phone').textContent = user.phone || '+63********095';
+}
+
+document.getElementById('logoutBtn').onclick = async () => {
+  await supabase.auth.signOut();
+  location.href='index.html';
+}
+</script>
+
+</body>
+</html>

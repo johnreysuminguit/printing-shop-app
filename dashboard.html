@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Orders - PrintHub</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
+  body{background:#080808;color:#fff;min-height:100vh}
+  header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:#0f0f0f;border-bottom:1px solid #222;position:sticky;top:0;z-index:10}
+ .logo{display:flex;gap:8px;align-items:center;font-weight:900}
+ .logo-icon{background:#ffb733;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:#000}
+ .wrap{max-width:700px;margin:20px auto;padding:0 16px}
+  h2{color:#ffb733;font-size:22px;margin-bottom:16px}
+ .order{background:#121212;border:1px solid #222;border-radius:16px;padding:14px;margin-bottom:14px}
+ .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+ .fname{font-size:13px;font-weight:800;word-break:break-all;color:#fff}
+ .meta{font-size:11px;color:#888;margin-top:4px}
+ .badge{padding:5px 10px;border-radius:20px;font-size:10px;font-weight:900;border:1px solid #ffb733;background:#2a2210;color:#ffb733}
+ .badge.completed{background:#00ff88;color:#000;border-color:#00ff88}
+ .preview{margin-top:10px;background:#0e0e0e;border-radius:10px;overflow:hidden;max-height:280px;display:grid;place-items:center;border:1px solid #222;padding:6px}
+ .preview img{max-width:100%;max-height:260px;object-fit:contain;background:#000}
+ .actions{margin-top:12px;display:flex;gap:8px}
+ .btn{padding:7px 14px;border-radius:20px;font-size:11px;font-weight:900;cursor:pointer;border:1px solid #444;background:transparent}
+ .btn-review{color:#ffb733;border-color:#ffb733}
+ .btn-cancel{color:#ff6b6b;border-color:#552222}
+ .back{color:#aaa;text-decoration:none;font-size:13px}
+ .empty{text-align:center;color:#666;margin-top:40px}
+
+  #reviewModal, #cancelModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;justify-content:center;align-items:center;padding:20px}
+  #reviewModal.show, #cancelModal.show{display:flex}
+ .modalContent{background:#151515;border:1px solid #333;border-radius:16px;padding:16px;max-width:95%;max-height:92%;position:relative;text-align:center}
+  #closeX{position:absolute;top:-12px;right:-12px;background:#fff;color:#000;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:18px;cursor:pointer}
+ .modalContent img{max-width:100%;max-height:75vh;border-radius:10px}
+
+ .cancelBox{background:#1a1a1a;border:1px solid #442222;border-radius:16px;padding:22px;max-width:340px;width:100%;text-align:center}
+ .cancelBox h3{color:#ff6b6b;font-size:18px;margin-bottom:8px}
+ .cancelBox p{color:#aaa;font-size:12px;line-height:1.5}
+ .btn-row{display:flex;gap:10px;margin-top:16px}
+ .btn-yes{flex:1;background:#ff6b6b;color:#fff;border:0;padding:10px;border-radius:10px;font-weight:900;cursor:pointer}
+ .btn-no{flex:1;background:#2a2a2a;color:#fff;border:1px solid #444;padding:10px;border-radius:10px;font-weight:900;cursor:pointer}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="back">← Home</a>
+  <div style="font-weight:900;display:flex;gap:6px;align-items:center"><div class="logo-icon">🖨️</div>PrintHub</div>
+  <a href="order.html" style="background:#ffb733;color:#000;padding:8px 14px;border-radius:10px;font-weight:900;text-decoration:none;font-size:12px">New Order</a>
+</header>
+
+<div class="wrap">
+  <h2>My Orders</h2>
+  <div id="list"><p class="empty">Loading orders...</p></div>
+</div>
+
+<!-- REVIEW MODAL -->
+<div id="reviewModal" onclick="closeReview()">
+  <div class="modalContent" onclick="event.stopPropagation()">
+    <div id="closeX" onclick="closeReview()">✕</div>
+    <img id="modalImg" src="">
+    <p id="modalName" style="margin-top:10px;color:#ffb733;font-size:12px;word-break:break-all"></p>
+  </div>
+</div>
+
+<!-- NO REFUND MODAL -->
+<div id="cancelModal" onclick="closeCancel()">
+  <div class="cancelBox" onclick="event.stopPropagation()">
+    <div style="font-size:32px">⚠️</div>
+    <h3>Cancel Order?</h3>
+    <p>This order is already <b style="color:#fff">PAID</b>.<br><br>If you cancel this order, <b style="color:#ff6b6b">NO REFUND</b> will be issued. Payment is non-refundable once processed.</p>
+    <div class="btn-row">
+      <button class="btn-no" onclick="closeCancel()">Keep Order</button>
+      <button class="btn-yes" onclick="confirmCancel()">Yes, Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+
+const list = document.getElementById('list');
+const reviewModal = document.getElementById('reviewModal');
+const modalImg = document.getElementById('modalImg');
+const modalName = document.getElementById('modalName');
+const cancelModal = document.getElementById('cancelModal');
+
+const { data:{session} } = await supabase.auth.getSession();
+if(!session) location.href='login.html';
+
+let cache = [];
+let toCancelId = null;
+
+async function load(){
+  const { data, error } = await supabase
+   .from('orders')
+   .select('*')
+   .eq('customer_email', session.user.email)
+   .order('created_at',{ascending:false});
+
+  if(error){
+    list.innerHTML=`<p class="empty">${error.message}</p>`;
+    return;
+  }
+  if(!data || data.length===0){
+    list.innerHTML=`<p class="empty">No orders yet.</p>`;
+    return;
+  }
+
+  cache = data;
+
+  list.innerHTML = data.map((o,i)=>{
+    const isDone = (o.status||'').toLowerCase().includes('complet');
+    const statusLabel = o.status.toUpperCase();
+    const badgeClass = isDone? 'completed' : 'paid';
+    return `
+      <div class="order">
+        <div class="top">
+          <div>
+            <div class="fname">${o.file_name}</div>
+            <div class="meta">${o.print_type||'documents'} • ₱${o.amount} • Ref:${o.id.slice(0,5)} • ${o.payment_method||'GCASH'}</div>
+          </div>
+          <span class="badge ${badgeClass}">${statusLabel}</span>
+        </div>
+        <div class="preview">
+          <img id="img-${o.id}" style="display:none">
+          <span id="txt-${o.id}" style="color:#666;font-size:11px;padding:20px">Loading preview...</span>
+        </div>
+        <div class="actions">
+          <button class="btn btn-review" onclick="openReview(${i})">● REVIEW</button>
+          <button class="btn btn-cancel" onclick="openCancel('${o.id}')">CANCEL</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Fix Loading preview - use download to support private bucket
+  for(const o of data){
+    if(!o.file_path) continue;
+    const img = document.getElementById(`img-${o.id}`);
+    const txt = document.getElementById(`txt-${o.id}`);
+
+    try{
+      const { data:blob, error } = await supabase.storage.from('print-files').download(o.file_path);
+      if(!error && blob){
+        img.src = URL.createObjectURL(blob);
+        img.onload = ()=>{ img.style.display='block'; txt.style.display='none'; };
+        continue;
+      }
+    }catch(e){}
+
+    const { data:pub } = supabase.storage.from('print-files').getPublicUrl(o.file_path);
+    if(pub?.publicUrl){
+      img.src = pub.publicUrl;
+      img.onload = ()=>{ img.style.display='block'; txt.style.display='none'; };
+      img.onerror = async ()=>{
+        const { data:s } = await supabase.storage.from('print-files').createSignedUrl(o.file_path, 3600);
+        if(s?.signedUrl){
+          img.src = s.signedUrl;
+          img.onload = ()=>{ img.style.display='block'; txt.style.display='none'; };
+        } else {
+          txt.textContent = 'Preview not available - file deleted';
+        }
+      };
+    }
+  }
+}
+
+window.openReview = async (i)=>{
+  const o = cache[i];
+  if(!o.file_path){ alert('No preview available'); return; }
+
+  try{
+    const { data:blob } = await supabase.storage.from('print-files').download(o.file_path);
+    if(blob){
+      modalImg.src = URL.createObjectURL(blob);
+      modalName.textContent = o.file_name;
+      reviewModal.classList.add('show');
+      return;
+    }
+  }catch(e){}
+
+  const { data:pub } = supabase.storage.from('print-files').getPublicUrl(o.file_path);
+  modalImg.src = pub?.publicUrl;
+  modalName.textContent = o.file_name;
+  reviewModal.classList.add('show');
+};
+
+window.closeReview = ()=> reviewModal.classList.remove('show');
+
+window.openCancel = (id)=>{
+  toCancelId = id;
+  cancelModal.classList.add('show');
+};
+
+window.closeCancel = ()=>{
+  cancelModal.classList.remove('show');
+  toCancelId = null;
+};
+
+window.confirmCancel = async ()=>{
+  if(!toCancelId) return;
+  const { error } = await supabase.from('orders').delete().eq('id', toCancelId);
+  if(error){ alert(error.message); return; }
+  closeCancel();
+  load();
+};
+
+window.cancelOrder = (id)=> openCancel(id);
+
+load();
+</script>
+</body>
+</html>
