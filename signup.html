@@ -29,12 +29,12 @@ input:focus{border-color:#f9c23c}
 
   <label>Full Name</label>
   <div class="input-wrap">
-    <input type="text" id="fullName" placeholder="John Doe" value="Marven Abiso">
+    <input type="text" id="fullName" placeholder="John Doe">
   </div>
 
   <label>Email</label>
   <div class="input-wrap">
-    <input type="email" id="email" placeholder="you@email.com" value="marvenabiso@gmail.com">
+    <input type="email" id="email" placeholder="you@email.com">
   </div>
 
   <label>Password</label>
@@ -56,10 +56,10 @@ window.togglePass = function(){
   const btn = document.getElementById('eyeBtn');
   if(inp.type === 'password'){
     inp.type = 'text';
-    btn.textContent = '🙉'; // monkey kita na password
+    btn.textContent = '🙉'; 
   }else{
     inp.type = 'password';
-    btn.textContent = '🙈'; // monkey takpan mata
+    btn.textContent = '🙈'; 
   }
 }
 
