@@ -54,7 +54,7 @@
   <div id="list"><p class="empty">Loading orders...</p></div>
 </div>
 
-<!-- REVIEW MODAL -->
+
 <div id="reviewModal" onclick="closeReview()">
   <div class="modalContent" onclick="event.stopPropagation()">
     <div id="closeX" onclick="closeReview()">✕</div>
@@ -63,7 +63,7 @@
   </div>
 </div>
 
-<!-- NO REFUND MODAL -->
+
 <div id="cancelModal" onclick="closeCancel()">
   <div class="cancelBox" onclick="event.stopPropagation()">
     <div style="font-size:32px">⚠️</div>
@@ -134,7 +134,7 @@ async function load(){
     `;
   }).join('');
 
-  // Fix Loading preview - use download to support private bucket
+  
   for(const o of data){
     if(!o.file_path) continue;
     const img = document.getElementById(`img-${o.id}`);
