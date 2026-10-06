@@ -67,14 +67,14 @@ document.getElementById('signupBtn').onclick = async () => {
   const fullName = document.getElementById('fullName').value;
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  if(!fullName || !email || !password){ alert('Fill up lahat!'); return; }
+  if(!fullName || !email || !password){ alert('Fill up All!'); return; }
 
   const { data, error } = await supabase.auth.signUp({
     email, password,
     options: { data: { full_name: fullName } }
   });
   if(error){ alert(error.message); }
-  else{ alert('Account created! Check email mo'); location.href='login.html'; }
+  else{ alert('Account created! Check your email '); location.href='login.html'; }
 }
 </script>
 
