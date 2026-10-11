@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create Account - PrintHub</title>
+<link rel="stylesheet" href="style.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
 body{background:#0a0a0a;color:#fff;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
@@ -29,7 +30,7 @@ input:focus{border-color:#f9c23c}
 
   <label>Full Name</label>
   <div class="input-wrap">
-    <input type="text" id="fullName" placeholder="John Borres">
+    <input type="text" id="fullName" placeholder="John Borist">
   </div>
 
   <label>Email</label>
@@ -67,14 +68,14 @@ document.getElementById('signupBtn').onclick = async () => {
   const fullName = document.getElementById('fullName').value;
   const email = document.getElementById('email').value;
   const password = document.getElementById('password').value;
-  if(!fullName || !email || !password){ alert('Fill up All!'); return; }
+  if(!fullName || !email || !password){ alert('Fill up lahat!'); return; }
 
   const { data, error } = await supabase.auth.signUp({
     email, password,
     options: { data: { full_name: fullName } }
   });
   if(error){ alert(error.message); }
-  else{ alert('Account created! Check your email '); location.href='login.html'; }
+  else{ alert('Account created! Check email mo'); location.href='login.html'; }
 }
 </script>
 
