@@ -4,151 +4,193 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Order - PrintHub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<link rel="stylesheet" href="style.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:Arial}
-body{background:#080808;color:#fff;min-height:100vh}
-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;background:#0f0f0f;border-bottom:1px solid #222}
-.card{max-width:520px;margin:20px auto;background:#121212;border:1px solid #222;border-radius:20px;padding:24px}
-.upload{border:2px dashed #333;border-radius:14px;padding:24px 16px;text-align:center;background:#151515;cursor:pointer}
-label{font-size:12px;color:#aaa;margin:12px 0 6px;display:block}
-select,input{width:100%;background:#1c1c1c;border:1px solid #333;border-radius:10px;padding:12px;color:#fff}
-.total{background:#1a1a1a;border-radius:12px;padding:16px;display:flex;justify-content:space-between;margin:18px 0;font-weight:900}
-.total span:last-child{color:#ffb733}
-.btn{width:100%;background:#ffb733;color:#000;border:0;padding:14px;border-radius:12px;font-weight:900;cursor:pointer}
-.btn:disabled{background:#333;color:#666;cursor:not-allowed}
-#previewBox{display:none;margin-top:12px;background:#1c1c1c;border:1px solid #333;border-radius:10px;padding:10px;text-align:center}
-#previewBox img{max-width:100%;max-height:200px;border-radius:8px;margin-top:8px}
-.viewBtn{background:#2a2a2a;color:#ffb733;border:1px solid #444;padding:6px 12px;border-radius:20px;font-size:11px;font-weight:800;margin-top:8px;cursor:pointer}
-
-#reviewModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;justify-content:center;align-items:center;padding:20px}
-#reviewModal.show{display:flex}
-.modalContent{background:#151515;border:1px solid #333;border-radius:16px;padding:16px;max-width:90%;max-height:90%;position:relative;text-align:center}
-.modalContent img{max-width:100%;max-height:70vh;border-radius:10px}
-#closeX{position:absolute;top:8px;right:8px;background:#ffb733;color:#000;width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:900;cursor:pointer;z-index:10}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#0a0a0a;color:#fff;min-height:100vh}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:#0f0f0f;border-bottom:1px solid #1e1e1e}
+.logo{display:flex;align-items:center;gap:8px;font-weight:900}
+.card{max-width:460px;margin:30px auto;background:#151515;border:1px solid #222;border-radius:16px;padding:22px}
+.upload{border:2px dashed #333;border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:.2s}
+.upload:hover{border-color:#f9c23c;background:#1a1a1a}
+.upload.dragover{border-color:#f9c23c;background:#1f1f1f}
+select,input{width:100%;background:#0f0f0f;border:1px solid #333;border-radius:8px;padding:10px;color:#fff;margin-top:6px}
+label{font-size:12px;color:#aaa;margin-top:14px;display:block}
+.totalBox{background:#0f0f0f;border-radius:10px;padding:14px;margin-top:16px;display:flex;justify-content:space-between;align-items:center}
+.totalBox b{color:#f9c23c;font-size:18px}
+.btn{width:100%;margin-top:14px;padding:12px;border-radius:10px;border:none;font-weight:900;cursor:pointer}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.primary{background:#f9c23c;color:#000}
+.info{font-size:11px;color:#888;margin-top:6px}
+.badge{display:inline-block;background:#f9c23c;color:#000;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:900;margin-left:6px}
 </style>
 </head>
 <body>
 <header>
-<a href="index.html" style="color:#aaa;text-decoration:none">← Home</a>
-<div style="font-weight:900">🖨️ PrintHub</div>
-<a href="dashboard.html" style="color:#ffb733;text-decoration:none;font-size:12px">My Orders</a>
+<div class="logo" onclick="location.href='dashboard.html'" style="cursor:pointer">← Home &nbsp; 🖨️ PrintHub</div>
+<div style="font-size:12px;color:#f9c23c;cursor:pointer" onclick="location.href='dashboard.html'">My Orders</div>
 </header>
-
 <div class="card">
-<h2 style="text-align:center">Place Order</h2>
-
-<div class="upload" id="dropZone">
+<h2 style="text-align:center;margin-bottom:12px">Place Order</h2>
+<div class="upload" id="dropZone" onclick="document.getElementById('fileInput').click()">
 <div style="font-size:32px">📁</div>
-<b id="fileName" style="font-size:13px">Click to choose file</b>
-<p style="font-size:11px;color:#888;margin-top:4px">PDF, JPG, DOCX - max 25MB</p>
-<input type="file" id="file" hidden accept=".pdf,.jpg,.jpeg,.png,.docx">
-<div id="previewBox">
-<p id="prevFileName" style="font-size:11px;color:#ffb733"></p>
-<img id="prevImg">
-<div><button class="viewBtn" type="button" onclick="openPreview()">👁️ Review</button></div>
+<div id="fileNameDisplay" style="font-size:13px;font-weight:800;margin-top:6px">Click to choose file</div>
+<small style="color:#888">PDF, JPG, DOCX - max 25MB</small>
+<div id="pageInfo" class="info"></div>
+<input type="file" id="fileInput" hidden accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
 </div>
-</div>
-
-<div style="display:flex;gap:10px">
-<div style="flex:1"><label>Print Type</label><select id="printType"><option>Black & White - ₱2</option><option>Colored - ₱5</option><option>Photo Print 4R - ₱15</option></select></div>
-<div style="flex:1"><label>Copies</label><input id="copies" type="number" value="1" min="1"></div>
-</div>
-
+<label>Print Type <span id="priceLabel" class="badge">₱2 / page</span></label>
+<select id="printType" onchange="compute()">
+<option value="bw" data-price="2">Black & White - ₱2</option>
+<option value="color" data-price="5">Colored - ₱5</option>
+<option value="photo" data-price="15">Photo Print 4R - ₱15</option>
+</select>
+<label>Copies</label>
+<input type="number" id="copies" value="1" min="1" oninput="compute()">
 <label>Payment Method</label>
-<select id="payMethod"><option>GCash (Demo Only)</option><option>Cash on Pickup</option></select>
-
-<div class="total"><span>Total:</span><span id="totalTxt">₱0.00</span></div>
-<button class="btn" id="orderBtn" disabled>Add to Queue - Select File First</button>
-<p id="hint" style="text-align:center;color:#666;font-size:11px;margin-top:8px">Demo mode - No real GCash needed</p>
+<select id="payment">
+<option>GCash (Demo Only)</option>
+<option>PayMaya (Demo)</option>
+<option>Cash on Pickup</option>
+</select>
+<div class="totalBox">
+<span>Total: <small id="breakdown" style="color:#888;font-size:11px"></small></span>
+<b id="totalText">₱2.00</b>
 </div>
-
-<div id="reviewModal" onclick="closePreview()">
-<div class="modalContent" onclick="event.stopPropagation()">
-<div id="closeX" onclick="closePreview()">✕</div>
-<img id="modalImg" src="">
-<p id="modalName" style="margin-top:10px;color:#ffb733;font-size:12px"></p>
-</div>
+<button id="orderBtn" class="btn primary" disabled>Add to Queue - Select File First</button>
+<p style="font-size:10px;color:#555;text-align:center;margin-top:8px">Demo mode - No real GCash needed</p>
 </div>
 
 <script type="module">
 import { supabase } from './supabase.js';
-let selectedFile=null, previewURL=null;
-const fileInput=document.getElementById('file'), fileName=document.getElementById('fileName'), dropZone=document.getElementById('dropZone'), previewBox=document.getElementById('previewBox'), prevImg=document.getElementById('prevImg'), prevFileName=document.getElementById('prevFileName'), printType=document.getElementById('printType'), copies=document.getElementById('copies'), totalTxt=document.getElementById('totalTxt'), orderBtn=document.getElementById('orderBtn'), modal=document.getElementById('reviewModal'), modalImg=document.getElementById('modalImg'), modalName=document.getElementById('modalName');
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const { data:{session} } = await supabase.auth.getSession();
+if(!session) location.href='login.html';
 
-function calc(){
- let price=2; if(printType.value.includes('5')) price=5; if(printType.value.includes('15')) price=15;
- const qty=parseInt(copies.value)||1; totalTxt.textContent=`₱${price*qty}.00`;
- validate();
+let detectedPages = 1;
+let fileObj = null;
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileNameDisplay = document.getElementById('fileNameDisplay');
+const pageInfo = document.getElementById('pageInfo');
+const totalText = document.getElementById('totalText');
+const breakdown = document.getElementById('breakdown');
+const printType = document.getElementById('printType');
+const copiesInput = document.getElementById('copies');
+const orderBtn = document.getElementById('orderBtn');
+const priceLabel = document.getElementById('priceLabel');
+
+dropZone.addEventListener('dragover', e=>{ e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', ()=> dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e=>{ e.preventDefault(); dropZone.classList.remove('dragover'); if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', ()=>{ if(fileInput.files[0]) handleFile(fileInput.files[0]); });
+
+async function handleFile(file){
+  fileObj = file;
+  fileNameDisplay.textContent = file.name;
+  pageInfo.textContent = '⏳ Detecting pages...';
+  orderBtn.disabled = true;
+  const ext = file.name.split('.').pop().toLowerCase();
+  try{
+    if(ext==='pdf'){
+      const buf = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({data:buf}).promise;
+      detectedPages = pdf.numPages;
+      pageInfo.innerHTML = `📄 PDF detected: <b style="color:#f9c23c">${detectedPages} pages</b>`;
+    } else if(ext==='docx' || ext==='doc'){
+      const buf = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({arrayBuffer:buf});
+      const words = result.value.trim().split(/\s+/).length;
+      detectedPages = Math.max(1, Math.ceil(words / 250));
+      pageInfo.innerHTML = `📝 DOCX: ~${words} words → <b style="color:#f9c23c">~${detectedPages} pages</b> (est.)`;
+    } else if(['jpg','jpeg','png'].includes(ext)){
+      detectedPages = 1;
+      pageInfo.innerHTML = `🖼️ Image: <b style="color:#f9c23c">1 page</b>`;
+    } else{
+      detectedPages = 1;
+      pageInfo.textContent = `1 page`;
+    }
+  }catch(err){
+    console.error(err);
+    detectedPages = 1;
+    pageInfo.textContent = `⚠️ Can't read pages, default 1 page`;
+  }
+  compute();
+  orderBtn.disabled = false;
+  orderBtn.textContent = 'Add to Queue';
 }
-printType.onchange=calc; copies.oninput=calc;
 
-function validate(){
- if(!selectedFile){
-   orderBtn.disabled=true;
-   orderBtn.textContent='Add to Queue - Select File First';
-   return;
- }
- orderBtn.disabled=false;
- orderBtn.textContent=`Add to Queue - ${totalTxt.textContent}`;
-}
-
-dropZone.addEventListener('click',()=>fileInput.click());
-fileInput.onchange=()=>{ if(fileInput.files[0]) handleFile(fileInput.files[0]); };
-
-function handleFile(f){
- if(f.size>25*1024*1024){ alert('File too large'); return; }
- selectedFile=f; fileName.textContent=f.name; fileName.style.color='#ffb733';
- previewBox.style.display='block'; prevFileName.textContent=f.name;
- if(previewURL) URL.revokeObjectURL(previewURL);
- if(f.type.startsWith('image/')){
-   previewURL=URL.createObjectURL(f);
-   prevImg.src=previewURL; prevImg.style.display='block';
- } else { prevImg.style.display='none'; previewURL=null; }
- calc();
-}
-
-window.openPreview=()=>{
- if(!selectedFile) return;
- if(previewURL){
-   modalImg.src=previewURL;
- } else {
-   modalImg.style.display='none';
- }
- modalName.textContent=selectedFile.name;
- modal.classList.add('show');
+window.compute = ()=>{
+  const price = parseFloat(printType.options[printType.selectedIndex].dataset.price);
+  const copies = parseInt(copiesInput.value) || 1;
+  priceLabel.textContent = `₱${price} / page`;
+  let finalPrice = price;
+  if(printType.value==='bw' && detectedPages>=100) finalPrice = 1.5;
+  const total = detectedPages * finalPrice * copies;
+  totalText.textContent = `₱${total.toFixed(2)}`;
+  breakdown.textContent = `${detectedPages} pg × ₱${finalPrice} × ${copies} copies`;
+  if(finalPrice!==price) breakdown.textContent += ` (bulk ₱1.5)`;
 };
-window.closePreview=()=> modal.classList.remove('show');
 
-orderBtn.onclick=async()=>{
- const { data:{session} } = await supabase.auth.getSession();
- if(!session){ alert('Login first'); location.href='login.html'; return; }
- orderBtn.disabled=true; orderBtn.textContent='Uploading...';
- try{
-   const safeName = `${Date.now()}_${selectedFile.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
-   const { error:upErr } = await supabase.storage.from('print-files').upload(safeName, selectedFile);
-   if(upErr) throw new Error(upErr.message);
-   const amount = parseInt(totalTxt.textContent.replace(/[^0-9]/g,''));
-   const { error:insErr } = await supabase.from('orders').insert([{
-     customer_email: session.user.email,
-     file_name: selectedFile.name,
-     file_path: safeName,
-     file_url: safeName,
-     print_type: printType.value,
-     copies: parseInt(copies.value),
-     amount: amount,
-     payment_method: 'GCash-Demo',
-     status: 'paid'
-   }]);
-   if(insErr) throw new Error(insErr.message);
-   alert('Added to queue!');
-   location.href='dashboard.html';
- }catch(err){
-   alert(err.message);
-   orderBtn.disabled=false;
-   calc();
- }
+orderBtn.onclick = async ()=>{
+  if(!fileObj) return;
+  orderBtn.textContent = 'Uploading...';
+  orderBtn.disabled = true;
+
+  
+  const fileName = `${Date.now()}_${fileObj.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+
+  
+  let uploadOk = false;
+  let bucketUsed = 'print-files';
+
+  let { error:upErr1 } = await supabase.storage.from('print-files').upload(fileName, fileObj);
+  if(!upErr1){
+    uploadOk = true;
+  } else {
+    
+    console.log('print-files failed, trying orders bucket:', upErr1.message);
+    let { error:upErr2 } = await supabase.storage.from('orders').upload(fileName, fileObj);
+    if(!upErr2){
+      uploadOk = true;
+      bucketUsed = 'orders';
+    } else {
+      alert('UPLOAD FAILED:\n'+upErr2.message+'\n\nPunta ka Supabase > Storage > gawing PUBLIC yung print-files at orders buckets');
+      orderBtn.textContent = 'Add to Queue';
+      orderBtn.disabled = false;
+      return;
+    }
+  }
+
+  const price = parseFloat(printType.options[printType.selectedIndex].dataset.price);
+  const finalPrice = (printType.value==='bw' && detectedPages>=100)? 1.5 : price;
+  const total = detectedPages * finalPrice * (parseInt(copiesInput.value)||1);
+
+  
+  const { error } = await supabase.from('orders').insert({
+    customer_email: session.user.email,
+    file_name: fileObj.name,
+    file_path: fileName,
+    file_url: fileName,
+    pages: detectedPages,
+    print_type: printType.options[printType.selectedIndex].text,
+    copies: parseInt(copiesInput.value)||1,
+    amount: total,
+    payment_method: document.getElementById('payment').value,
+    status: 'pending'
+  });
+
+  if(error){
+    alert('DB Error: '+error.message);
+    orderBtn.textContent = 'Add to Queue';
+    orderBtn.disabled=false;
+    return;
+  }
+  alert(`✅ Order added sa ${bucketUsed}!\n${detectedPages} pages = ₱${total.toFixed(2)}`);
+  location.href='dashboard.html';
 };
-calc();
 </script>
 </body>
 </html>
