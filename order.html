@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order - PrintHub</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+body{margin:0;background:#0a0a0a;color:white;font-family:Arial}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#0f0f0f;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;color:white}
+.logo-icon{width:32px;height:32px;background:#f9c23c;border-radius:8px;display:grid;place-items:center;color:#000}
+.homeBtn{text-decoration:none;color:white;font-weight:900;font-size:18px;display:flex;align-items:center;gap:8px;cursor:pointer;background:none;border:none}
+.myOrdersBtn{color:#f9c23c;text-decoration:none;font-size:13px;font-weight:700;cursor:pointer;background:none;border:none}
+.contentWrap{flex:1;overflow:auto;min-height:calc(100vh - 60px);display:flex;justify-content:center;align-items:center;padding:20px;background:radial-gradient(900px at 20% 10%, rgba(249,194,60,0.22), transparent),linear-gradient(180deg, #2a2110 0%, #1e1a0a 100%)}
+.orderCard{background:linear-gradient(135deg, #1e1a0a 0%, #151515 100%);border:1px solid rgba(249,194,60,0.25);border-radius:16px;padding:24px;width:100%;max-width:450px}
+.uploadBox{border:2px dashed #333;border-radius:12px;padding:30px;text-align:center;cursor:pointer;background:#0f0f0f;transition:0.2s}
+.uploadBox:hover{border-color:#f9c23c;background:#1a1a0a}
+select,input{width:100%;background:#0f0f0f;border:1px solid #333;color:white;padding:12px;border-radius:8px;margin-top:6px;box-sizing:border-box}
+.pageInfo{background:#1a1a0a;border:1px solid rgba(249,194,60,0.2);border-radius:8px;padding:10px;margin-top:12px;font-size:12px;color:#aaa;display:none}
+</style>
+</head>
+<body>
+<header>
+<div style="display:flex;align-items:center;gap:16px">
+<button class="homeBtn" onclick="goHome()">← Home</button>
+<div class="logo"><div class="logo-icon">🖨️</div> PrintHub</div>
+</div>
+<button class="myOrdersBtn" onclick="goMyOrders()">My Orders</button>
+</header>
+<div class="contentWrap">
+<div class="orderCard">
+<h2 style="text-align:center;margin:0 0 16px"><i class="fa-solid fa-print" style="color:#f9c23c"></i> Place Order</h2>
+<div class="uploadBox" onclick="document.getElementById('fileInput').click()"><div style="font-size:28px">📁</div><b style="font-size:13px">Click to choose file</b><br><small style="color:#888">PDF, JPG, PNG, DOCX - max 25MB</small><p id="fileName" style="color:#f9c23c;font-size:12px;margin-top:8px;display:none;word-break:break-all"></p></div>
+<input type="file" id="fileInput" hidden accept=".pdf,.jpg,.jpeg,.png,.docx,.doc">
+<div id="pageInfo" class="pageInfo"></div>
+<label style="font-size:12px;color:#aaa;margin-top:14px;display:block">Print Type</label>
+<select id="printType"><option>Black & White - ₱2 per page</option><option>Colored - ₱5 per page</option><option>Photo 4R - ₱15 per photo</option></select>
+<label style="font-size:12px;color:#aaa;margin-top:14px;display:block">Copies</label>
+<input type="number" id="copies" value="1" min="1" max="100">
+<label style="font-size:12px;color:#aaa;margin-top:14px;display:block">Payment Method</label>
+<select id="payment"><option>GCash (Demo Only)</option><option>Cash on Pickup</option></select>
+<div style="display:flex;justify-content:space-between;margin:18px 0;font-weight:900;background:#0f0f0f;padding:12px;border-radius:8px;border:1px solid #222"><span>Total:</span><span id="total" style="color:#f9c23c">₱2.00</span></div>
+<div style="font-size:10px;color:#666;text-align:center;margin-bottom:10px" id="breakdown">2 x 1 page x 1 copy</div>
+<button id="submitBtn" disabled style="width:100%;background:#555;color:#888;border:none;padding:14px;border-radius:10px;font-weight:900;cursor:not-allowed">Add to Queue - Select File First</button>
+</div>
+</div>
+<script type="module">
+import { supabase } from './supabase.js';
+const fileInput=document.getElementById('fileInput'),fileName=document.getElementById('fileName'),submitBtn=document.getElementById('submitBtn'),printType=document.getElementById('printType'),copies=document.getElementById('copies'),total=document.getElementById('total'),pageInfo=document.getElementById('pageInfo'),breakdown=document.getElementById('breakdown');
+let selectedFile=null;
+let pageCount=1;
+
+// PDF PAGE COUNTER - BOSS ETO BAGO!
+async function countPDFPages(file){
+  try{
+    const arrayBuffer = await file.arrayBuffer();
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const loadingTask = pdfjsLib.getDocument({data: arrayBuffer});
+    const pdf = await loadingTask.promise;
+    return pdf.numPages;
+  }catch(e){
+    console.log('PDF count error:', e);
+    return 1;
+  }
+}
+
+function calcTotal(){
+  let price=2;
+  if(printType.value.includes('₱5')) price=5;
+  if(printType.value.includes('₱15')) price=15;
+  const c=parseInt(copies.value)||1;
+  const pages=pageCount||1;
+  // BOSS FORMULA: Price x Pages x Copies
+  const tot = price * pages * c;
+  total.textContent=`₱${tot.toFixed(2)}`;
+  breakdown.textContent=`₱${price} x ${pages} page${pages>1?'s':''} x ${c} cop${c>1?'ies':'y'} = ₱${tot}`;
+  return tot;
+}
+printType.addEventListener('change',calcTotal);
+copies.addEventListener('input',calcTotal);
+
+fileInput.addEventListener('change',async (e)=>{
+  const f=e.target.files[0];if(!f)return;
+  if(f.size>25*1024*1024){alert('Max 25MB lang boss!');return;}
+  selectedFile=f;
+  fileName.style.display='block';
+  fileName.innerHTML=`<i class="fa-solid fa-spinner fa-spin"></i> Reading ${f.name}...`;
+  pageInfo.style.display='block';
+  pageInfo.innerHTML='Detecting pages...';
+
+  // BOSS AUTO DETECT PAGES!
+  if(f.name.toLowerCase().endsWith('.pdf')){
+    pageCount = await countPDFPages(f);
+    fileName.textContent=f.name;
+    pageInfo.innerHTML=`<i class="fa-solid fa-file-pdf" style="color:#f9c23c"></i> PDF Detected: <b style="color:#00ff88">${pageCount} page${pageCount>1?'s':''}</b><br><small>₱ per page x ${pageCount} pages will be computed</small>`;
+  }else if(f.name.toLowerCase().endsWith('.docx') || f.name.toLowerCase().endsWith('.doc')){
+    // DOCX - hindi exact pero estimate 1 page = 500 words, pero gawin 1 muna then editable
+    pageCount = 1;
+    fileName.textContent=f.name;
+    pageInfo.innerHTML=`<i class="fa-solid fa-file-word" style="color:#5b9cf6"></i> Word Document: <b style="color:#f9c23c">Default 1 page</b><br><small style="color:#888">Boss tip: Kung marami pages doc mo, adjust mo sa Copies or sabihan mo customer na price per page pa rin. Pwede mo manual edit pageCount sa console kung gusto mo exact.</small>`;
+  }else{
+    pageCount = 1;
+    fileName.textContent=f.name;
+    pageInfo.innerHTML=`<i class="fa-solid fa-file-image" style="color:#f9c23c"></i> Photo/Image: <b style="color:#00ff88">1 photo = 1 page</b>`;
+  }
+  
+  calcTotal();
+  submitBtn.disabled=false;
+  submitBtn.style.background='#f9c23c';
+  submitBtn.style.color='#000';
+  submitBtn.style.cursor='pointer';
+  submitBtn.textContent=`Add to Queue - Pay ₱${calcTotal().toFixed(2)}`;
+});
+
+window.goHome=function(){localStorage.removeItem('ph_go_to');localStorage.setItem('ph_go_to','c_home');window.location.href='index.html';}
+window.goMyOrders=function(){localStorage.setItem('ph_go_to','c_orders');window.location.href='index.html';}
+
+submitBtn.addEventListener('click',async()=>{
+  if(!selectedFile)return;
+  submitBtn.textContent='Uploading file...';submitBtn.disabled=true;
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session){window.location.href='login.html';return;}
+  try{
+    const cleanName = selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const uniqueName = Date.now() + '_' + cleanName;
+    const {error:upError} = await supabase.storage.from('orders').upload(uniqueName, selectedFile, {upsert:false});
+    if(upError) throw upError;
+    const {data:urlData} = supabase.storage.from('orders').getPublicUrl(uniqueName);
+    const amount=calcTotal();
+    const {error}=await supabase.from('orders').insert([{
+      customer_email:session.user.email,
+      file_name:uniqueName,
+      file_url:urlData.publicUrl,
+      print_type:printType.value,
+      copies:parseInt(copies.value)||1,
+      pages:pageCount,
+      payment_method:document.getElementById('payment').value,
+      amount:amount,
+      status:'Pending'
+    }]);
+    if(error) throw error;
+    alert(`Order placed boss!\n${pageCount} page(s) x ${copies.value} copies = ₱${amount}\nFile: ${selectedFile.name}`);
+    goMyOrders();
+  }catch(err){
+    console.error(err);
+    alert('Upload failed: '+err.message+'\nCheck Storage policies boss!');
+    submitBtn.textContent='Add to Queue - Place Order';
+    submitBtn.disabled=false;
+  }
+});
+</script>
+</body>
+</html>

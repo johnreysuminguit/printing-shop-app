@@ -1,0 +1,17 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Reset Password</title><link rel="stylesheet" href="style.css"></head>
+<body class="print-bg"><div class="phone center-bg">
+<div class="auth-card"><h2>New Password</h2><p class="sub">Galing ka sa Gmail authenticator</p>
+<div class="inputBox"><span>🔒</span><input id="newPass" type="password" placeholder="New password"></div>
+<button class="primary" onclick="updatePass()">Confirm Change Password</button>
+</div></div>
+<script type="module">
+import { supabase } from './supabase.js'
+window.updatePass = async () => {
+  let p = document.getElementById('newPass').value
+  if(p.length < 6) return alert('6 chars minimum')
+  const { error } = await supabase.auth.updateUser({ password: p })
+  if(error) return alert(error.message)
+  alert('✅ Password changed! Balik ka sa login at may confirmation din sa Gmail mo.')
+  location.href='login.html'
+}
+</script></body></html>

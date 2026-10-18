@@ -1,0 +1,52 @@
+<!DOCTYPE html> <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Payment - PrintHub</title> <style>body{margin:0;background:#0a0a0a;color:white;font-family:Arial;display:flex;justify-content:center;padding:20px}.pay-container{max-width:380px;width:100%;background:#151515;border:1px solid #2a2a2a;border-radius:16px;padding:20px}.pay-opt{display:block;background:#252525;border:1.5px solid #333;padding:14px;border-radius:12px;margin-top:10px;cursor:pointer}.pay-opt.active{border-color:#ffb733;background:rgba(255,183,51,0.15)}.qr-box{background:#1e1e1e;border:1px dashed #555;padding:14px;border-radius:12px;margin-top:16px;text-align:center}.qr{background:white;color:black;padding:24px;border-radius:8px;font-weight:bold;margin:10px 0}#refNum{width:100%;padding:11px;border-radius:8px;border:1px solid #444;background:#0a0a0a;color:white;box-sizing:border-box}.btn-pay{background:#ffb733;color:black;border:none;padding:13px;width:100%;border-radius:10px;font-weight:bold;margin-top:16px;cursor:pointer}.btn-cancel{background:transparent;border:1px solid #333;color:#888;width:100%;padding:10px;border-radius:10px;margin-top:8px;cursor:pointer}</style> </head><body> <div class="pay-container"> <h2 style="color:#ffb733">Payment Method</h2> <p>File: <b id="payFileName">-</b></p> <p>Total: <b id="payTotal" style="color:#ffb733;font-size:22px">₱0</b></p> <label class="pay-opt active" onclick="selectPay('gcash')" id="optGCash">💙 GCash</label> <label class="pay-opt" onclick="selectPay('paymaya')" id="optMaya">💚 PayMaya</label> <div class="qr-box"><p>Scan to pay with <b id="payLabel">GCash</b></p><div class="qr">QR - <span id="qrTotal">₱0</span><br><small>PrintHub Official</small></div><input id="refNum" placeholder="Enter Ref No. ex: 1234567890123"></div> <button class="btn-pay" onclick="confirmPay()">Pay & Confirm Order</button> <button class="btn-cancel" onclick="location.href='index.html'">Back to Home</button> </div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+
+let selectedPayment='gcash'; 
+const fileName = localStorage.getItem('ph_fileName') || '-'; 
+const total = localStorage.getItem('ph_total') || '0'; 
+const preview = localStorage.getItem('ph_preview'); 
+const printType = localStorage.getItem('ph_printType') || 'documents'; 
+
+document.getElementById('payFileName').innerText=fileName; 
+document.getElementById('payTotal').innerText=`₱${total}.00`; 
+document.getElementById('qrTotal').innerText=`₱${total}.00`; 
+
+window.selectPay = function(t){
+  selectedPayment=t;
+  document.querySelectorAll('.pay-opt').forEach(o=>o.classList.remove('active'));
+  document.getElementById(t==='gcash'?'optGCash':'optMaya').classList.add('active');
+  document.getElementById('payLabel').innerText=t==='gcash'?'GCash':'PayMaya';
+}
+
+window.confirmPay = async function(){
+  const ref=document.getElementById('refNum').value;
+  if(!ref){alert('Lagay mo Ref No.!');return;}
+  
+  alert('✅ Paid! Saving order...');
+  
+  
+  let orders=JSON.parse(localStorage.getItem('ph_orders')||'[]');
+  orders.unshift({file_name:fileName,total_price:total,payment_method:selectedPayment,refNum:ref,preview:preview,print_type:printType,status:'paid'});
+  localStorage.setItem('ph_orders',JSON.stringify(orders));
+
+  
+  const {data:{session}} = await supabase.auth.getSession();
+  if(session){
+    await supabase.from('orders').insert([{
+      customer_email: session.user.email,
+      file_name: fileName,
+      file_url: preview || '',
+      print_type: printType,
+      payment_method: selectedPayment,
+      amount: Number(total) || 25,
+      status: 'pending'
+    }]);
+  }
+
+  location.href='index.html';
+}
+</script> 
+
+</body></html>

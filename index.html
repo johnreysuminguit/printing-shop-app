@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintHub - Your Online Print Shop</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0a0a0a;color:white;font-family:Arial;overflow:auto}
+#publicView{background: linear-gradient(rgba(10,10,10,0.60), rgba(10,10,10,0.70)), url('printer-bg.jpg'), linear-gradient(180deg, #1e1a0a 0%, #0a0a0a 100%);background-size:cover;background-position:center;background-attachment:fixed;}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0f0f0f;border-bottom:1px solid #1e1e1e;position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;color:white}
+.logo-icon{width:32px;height:32px;background:#f9c23c;border-radius:8px;display:grid;place-items:center;color:#000}
+nav{display:flex;gap:16px} nav a{color:#aaa!important;text-decoration:none;font-size:13px;cursor:pointer;padding:8px 12px;border-radius:8px;transition:0.2s} nav a.active{color:#f9c23c!important;background:rgba(249,194,60,0.15);font-weight:900} nav a:hover{color:white!important;background:#1a1a1a}
+#topBtnPub{background:#f9c23c!important;color:#000!important;border:none!important;padding:9px 16px;border-radius:9px;font-weight:900;cursor:pointer}
+.hero{text-align:center;padding:100px 20px 80px;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center}
+.secWrap{padding:70px 20px;min-height:90vh;display:flex;flex-direction:column;justify-content:center;background:rgba(10,10,10,0.65);border-top:1px solid rgba(249,194,60,0.15)}
+.secTitle{max-width:900px;margin:0 auto 24px;padding:0 20px;font-size:26px;font-weight:900;color:#f9c23c;display:flex;gap:12px;align-items:center;width:100%}
+.cards{display:flex;gap:16px;justify-content:center;max-width:900px;margin:0 auto 22px;flex-wrap:wrap}
+.card{background:linear-gradient(135deg, rgba(30,26,10,0.92) 0%, rgba(21,21,21,0.92) 100%)!important;border:1px solid rgba(249,194,60,0.25)!important;border-radius:14px;padding:22px;width:270px;text-align:center}
+.card-icon{width:48px;height:48px;border:1px solid #f9c23c;border-radius:12px;display:grid;place-items:center;margin:0 auto 10px;color:#f9c23c;font-size:20px}
+#customerApp{display:none;width:100vw;height:100vh;overflow:hidden;position:fixed;top:0;left:0;z-index:9999} #customerApp.active{display:flex}
+.sidebar{width:260px;min-width:260px;background:#0f0f0f!important;border-right:1px solid #1e1e1e;padding:20px;flex-shrink:0;display:flex;flex-direction:column;z-index:20}
+.menu{display:flex;flex-direction:column;gap:6px;margin-top:20px}
+.menu a{color:#aaa!important;text-decoration:none;font-size:13px;padding:12px 14px;border-radius:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.menu a.active{background:#f9c23c!important;color:#000!important;font-weight:900}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{display:flex;justify-content:flex-end;align-items:center;padding:12px 20px;background:#0f0f0f!important;border-bottom:1px solid #1e1e1e;gap:16px;position:relative;z-index:30}
+.rightGroup{display:flex;align-items:center;gap:14px}
+#welcomeText{color:#f9c23c;font-weight:800;font-size:13px;white-space:nowrap}
+#notifBell{position:relative;cursor:pointer;font-size:22px;color:white;z-index:40;transition:0.2s} #notifBell:hover{color:#f9c23c}
+#notifCount{position:absolute;top:-7px;right:-9px;background:#ff3333;color:white;font-size:10px;font-weight:900;padding:2px 6px;border-radius:50%;display:none;border:2px solid #0f0f0f}
+#notifDropdown{display:none;position:fixed;right:20px;top:62px;width:350px;background:#1a1a1a;border:1px solid #333;border-radius:14px;padding:14px;z-index:9999;box-shadow:0 15px 50px rgba(0,0,0,0.9);max-height:450px;overflow:auto}
+#topBtn{background:#1e1e1e!important;color:#aaa!important;border:1px solid #333!important;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:0.2s}
+#topBtn:hover{background:#ff2222!important;color:white!important;border-color:#ff3333!important;box-shadow:0 0 12px rgba(255,50,50,0.4)}
+.content{flex:1;overflow:auto;background: radial-gradient(800px at 30% 20%, rgba(249,194,60,0.25), transparent), linear-gradient(180deg, #2a2110 0%, #1e1a0a 100%)!important;}
+.cSec{display:none;padding:40px 20px;min-height:calc(100vh - 62px)} .cSec.active{display:block}
+#c_home.active{display:flex!important;flex-direction:column;justify-content:center;align-items:center;min-height:calc(100vh - 62px);padding:20px!important}
+.backBtn{background:#1a1a1a;border:1px solid rgba(249,194,60,0.2);color:#aaa;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:12px;display:inline-flex;gap:6px;align-items:center}
+.orderItem{background:linear-gradient(135deg, #1e1a0a 0%, #151515 100%)!important;border:1px solid rgba(249,194,60,0.22)!important;border-radius:12px;padding:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.pItem,.profileCard{background:linear-gradient(135deg, #1e1a0a 0%, #151515 100%)!important;border:1px solid rgba(249,194,60,0.22)!important;border-radius:12px;padding:14px;margin-bottom:10px}
+.viewBtn{background:#f9c23c;color:#000;border:none;padding:7px 14px;border-radius:8px;font-weight:900;font-size:11px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.deleteBtn{background:#222;border:1px solid #ff4444;color:#ff4444;padding:7px 12px;border-radius:8px;font-weight:900;font-size:11px;cursor:pointer;display:inline-flex;gap:6px;align-items:center} .deleteBtn:hover{background:#ff4444;color:white}
+.avatar{width:60px;height:60px;background:#f9c23c;color:#000;border-radius:50%;display:grid;place-items:center;font-weight:900;font-size:24px}
+#viewModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:10000;justify-content:center;align-items:center;padding:20px} #viewModal.active{display:flex}
+#viewContent{background:#121212;border:1px solid #333;border-radius:14px;max-width:90vw;max-height:90vh;width:850px;display:flex;flex-direction:column;overflow:hidden}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div id="publicView">
+<header><div class="logo"><div class="logo-icon"><i class="fa-solid fa-print"></i></div> PrintHub</div><nav><a id="n0" class="active" onclick="goTo('home')">Home</a><a id="n1" onclick="goTo('how')">How It Works</a><a id="n2" onclick="goTo('services')">Services</a><a id="n3" onclick="goTo('pricing')">Pricing</a><a id="n4" onclick="goTo('help')">Help</a></nav><div><button id="topBtnPub">Get Started</button></div></header>
+<div id="home" class="hero"><h1 style="font-size:48px;font-weight:900;margin:0;line-height:1.1">PrintHub<br>Your Online<br><span style="color:#f9c23c">Print Shop</span></h1><p style="color:#ddd;font-size:17px;margin:20px 0 28px">Fast, affordable, and reliable prints</p><div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center"><button id="middleBtnPub" style="background:#f9c23c;color:#000;border:none;padding:16px 32px;border-radius:12px;font-weight:900;cursor:pointer;font-size:15px">Get Started — Order Now →</button><button onclick="goTo('how')" style="background:transparent;color:white;border:1px solid #555;padding:16px 24px;border-radius:12px;font-weight:700;cursor:pointer">How it works</button></div></div>
+<div id="how" class="secWrap"><div class="secTitle"><i class="fa-solid fa-list-ol"></i> How It Works</div><div class="cards"><div class="card"><div class="card-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div><h3 style="color:white">1. Upload</h3><p style="color:#aaa;font-size:13px">Choose PDF, JPG, DOCX</p></div><div class="card"><div class="card-icon"><i class="fa-solid fa-credit-card"></i></div><h3 style="color:white">2. Pay</h3><p style="color:#aaa;font-size:13px">Total = Price x Pages x Copies</p></div><div class="card"><div class="card-icon"><i class="fa-solid fa-box-open"></i></div><h3 style="color:white">3. Pickup</h3><p style="color:#aaa;font-size:13px">Get notified when Completed!</p></div></div></div>
+<div id="services" class="secWrap"><div class="secTitle"><i class="fa-solid fa-briefcase"></i> Our Services</div><div class="cards"><div class="card"><div class="card-icon"><i class="fa-solid fa-file-lines"></i></div><h3 style="color:white">Document Printing</h3></div><div class="card"><div class="card-icon"><i class="fa-solid fa-image"></i></div><h3 style="color:white">Photo Printing</h3></div><div class="card"><div class="card-icon"><i class="fa-solid fa-id-card"></i></div><h3 style="color:white">ID & Certificates</h3></div></div></div>
+<div id="pricing" class="secWrap"><div class="secTitle"><i class="fa-solid fa-tag"></i> Pricing</div><div class="cards"><div class="card"><h3 style="color:#f9c23c">Black & White</h3><h1>₱2</h1></div><div class="card"><h3 style="color:white">Colored</h3><h1>₱5</h1></div><div class="card"><h3 style="color:white">Photo 4R</h3><h1>₱15</h1></div></div></div>
+<div id="help" class="secWrap"><div class="secTitle"><i class="fa-solid fa-circle-question"></i> Help Center</div><div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;width:100%"><div class="card" style="width:100%;text-align:left"><h4 style="color:#f9c23c">Location</h4><p style="color:#aaa;font-size:13px">San Carlos City</p></div><div class="card" style="width:100%;text-align:left"><h4 style="color:#f9c23c">Supported Files</h4><p style="color:#aaa;font-size:13px">PDF, JPG, PNG, DOCX - Max 25MB</p></div><div class="card" style="width:100%;text-align:left"><h4 style="color:#f9c23c">Contact</h4><p style="color:#aaa;font-size:13px">printhub@email.com - GCash & COD</p></div></div></div>
+</div>
+
+<div id="viewModal" onclick="if(event.target.id==='viewModal') closeView()"><div id="viewContent"><div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #333"><b id="viewFileName" style="color:#f9c23c;font-size:13px">File Preview</b><button onclick="closeView()" style="background:#333;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer"><i class="fa-solid fa-xmark"></i> Close</button></div><div id="viewBody" style="flex:1;overflow:auto;display:grid;place-items:center;padding:10px;min-height:400px;background:#0a0a0a"></div></div></div>
+
+<div id="customerApp">
+<div class="sidebar"><div class="logo"><div class="logo-icon"><i class="fa-solid fa-print"></i></div> PrintHub</div><div class="menu"><a id="c_n0" class="active" onclick="customerGo('c_home')"><i class="fa-solid fa-house"></i> Home</a><a id="c_n1" onclick="customerGo('c_orders')"><i class="fa-solid fa-receipt"></i> My Orders</a><a id="c_n2" onclick="customerGo('c_profile')"><i class="fa-solid fa-user"></i> My Profile</a><a id="c_n3" onclick="customerGo('c_pricing')"><i class="fa-solid fa-tag"></i> Pricing</a><a id="c_n4" onclick="customerGo('c_help')"><i class="fa-solid fa-circle-question"></i> Help</a></div></div>
+<div class="main">
+<div class="topbar">
+  <div class="rightGroup">
+    <div id="notifBell" onclick="toggleNotif(event)" title="Notifications"><i class="fa-solid fa-bell"></i><span id="notifCount">0</span></div>
+    <span id="welcomeText">Welcome, Customer</span>
+    <button id="topBtn" title="Logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+  </div>
+  <div id="notifDropdown"><b style="color:#f9c23c"><i class="fa-solid fa-bell"></i> Notifications</b><p style="color:#666;font-size:11px;margin:4px 0 0">Completed prints only</p><div id="notifList" style="margin-top:12px"></div></div>
+</div>
+<div class="content">
+<div id="c_home" class="cSec active"><div style="display:flex;align-items:center;gap:30px;max-width:1000px;width:100%;flex-wrap:wrap;justify-content:center"><div style="flex:1;min-width:280px;display:flex;justify-content:center"><img src="illustration.jpg" style="width:100%;max-width:380px;border-radius:20px;border:2px solid rgba(249,194,60,0.3)" onerror="this.style.display='none'; document.getElementById('fallbackImg').style.display='grid'"><div id="fallbackImg" style="display:none;width:100%;max-width:380px;height:380px;background:linear-gradient(135deg,#f9c23c 0%, #ff8c00 100%);border-radius:20px;place-items:center;font-size:90px">🖨️</div></div><div style="flex:1;min-width:280px;text-align:left"><h1 style="font-size:38px;font-weight:900;margin:0;line-height:1.1">Welcome Back,<br><span id="welcomeNameInline" style="color:#f9c23c">Customer!</span></h1><p style="color:#ddd;margin:14px 0 8px">Ready to print?</p><div style="display:flex;gap:12px;flex-wrap:wrap"><button onclick="location.href='order.html'" style="background:#f9c23c;color:#000;border:none;padding:14px 28px;border-radius:12px;font-weight:900;cursor:pointer"><i class="fa-solid fa-plus"></i> Order Now</button><button onclick="customerGo('c_orders')" style="background:#1a1a1a;color:white;border:1px solid #333;padding:14px 22px;border-radius:12px;font-weight:700;cursor:pointer">My Orders</button></div></div></div></div>
+<div id="c_orders" class="cSec"><div class="secTitle"><button class="backBtn" onclick="customerGo('c_home')"><i class="fa-solid fa-arrow-left"></i> Back</button> My Orders <span id="totalOrders" style="font-size:12px;color:#aaa;font-weight:400;margin-left:10px"></span></div><div id="ordersList"></div></div>
+<div id="c_pricing" class="cSec"><div class="secTitle"><button class="backBtn" onclick="customerGo('c_home')"><i class="fa-solid fa-arrow-left"></i> Back</button> Pricing</div><div class="cards"><div class="card"><h3 style="color:#f9c23c">B&W ₱2</h3><h1>₱2</h1></div><div class="card"><h3 style="color:white">Colored ₱5</h3><h1>₱5</h1></div><div class="card"><h3>Photo ₱15</h3><h1>₱15</h1></div></div></div>
+<div id="c_help" class="cSec"><div class="secTitle"><button class="backBtn" onclick="customerGo('c_home')"><i class="fa-solid fa-arrow-left"></i> Back</button> Help</div><div class="cards"><div class="card" style="width:100%;max-width:600px;text-align:left"><h4 style="color:#f9c23c">How it works</h4><p style="color:#aaa;font-size:13px">Upload → Pay → Admin prints → You get notif when Completed → Pickup</p></div></div></div>
+<div id="c_profile" class="cSec"><div class="secTitle"><button class="backBtn" onclick="customerGo('c_home')"><i class="fa-solid fa-arrow-left"></i> Back</button> My Profile</div><div class="profileCard" style="display:flex;gap:16px;align-items:center"><div class="avatar" id="avatarLetter">M</div><div><h3 id="pName" style="margin:0;color:white">Customer</h3><p id="pEmailShort" style="color:#aaa"></p><p id="pEmailFull" style="color:#f9c23c;font-size:12px"></p></div></div><div class="pItem"><h4 style="color:white;margin:0 0 10px"><i class="fa-solid fa-lock"></i> Change Password</h4><div style="position:relative;margin-bottom:8px"><input type="password" id="newPass" placeholder="New password (min 6)" style="width:100%;background:#0f0f0f;border:1px solid #333;color:white;padding:10px 40px 10px 10px;border-radius:8px"><button type="button" onclick="toggleEye('newPass', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;font-size:16px"><i class="fa-solid fa-eye"></i></button></div><div style="position:relative;margin-bottom:10px"><input type="password" id="confirmPass" placeholder="Confirm password" style="width:100%;background:#0f0f0f;border:1px solid #333;color:white;padding:10px 40px 10px 10px;border-radius:8px"><button type="button" onclick="toggleEye('confirmPass', this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;font-size:16px"><i class="fa-solid fa-eye"></i></button></div><button id="changePassBtn" onclick="changePassword()" style="background:#f9c23c;color:#000;border:none;padding:10px 16px;border-radius:8px;font-weight:900;cursor:pointer;width:100%">Update Password</button><p id="passMsg" style="font-size:12px;margin-top:8px;display:none"></p></div></div>
+</div>
+</div>
+</div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+const topBtnPub=document.getElementById('topBtnPub'),middleBtnPub=document.getElementById('middleBtnPub'),topBtn=document.getElementById('topBtn'),welcomeText=document.getElementById('welcomeText'),notifBell=document.getElementById('notifBell'),notifCount=document.getElementById('notifCount'),notifDropdown=document.getElementById('notifDropdown'),notifList=document.getElementById('notifList'),ordersList=document.getElementById('ordersList'),publicView=document.getElementById('publicView'),customerApp=document.getElementById('customerApp'),ADMIN_EMAIL="johnreysumingit53@gmail.com";
+let currentNotifs=[];
+const navIds={home:'n0',how:'n1',services:'n2',pricing:'n3',help:'n4'};
+function setActive(id){document.querySelectorAll('#publicView nav a').forEach(a=>a.classList.remove('active'));if(navIds[id])document.getElementById(navIds[id]).classList.add('active');}
+window.goTo=function(id){setActive(id);const el=document.getElementById(id);if(!el)return;const y=el.getBoundingClientRect().top + window.pageYOffset - 70;window.scrollTo({top:y,behavior:"smooth"});}
+window.customerGo=function(id){document.querySelectorAll('.cSec').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.menu a').forEach(a=>a.classList.remove('active'));const map={c_home:'c_n0',c_orders:'c_n1',c_profile:'c_n2',c_pricing:'c_n3',c_help:'c_n4'};if(map[id])document.getElementById(map[id]).classList.add('active');document.querySelector('#customerApp .content').scrollTop=0;}
+
+window.toggleNotif=function(e){
+  if(e) e.stopPropagation();
+  const isHidden=notifDropdown.style.display!=='block';
+  notifDropdown.style.display=isHidden?'block':'none';
+  if(isHidden && currentNotifs.length>0){
+    const readKey='ph_read_notifs_v2';
+    const readIds=JSON.parse(localStorage.getItem(readKey)||'[]');
+    currentNotifs.forEach(o=>{if(!readIds.includes(o.id)) readIds.push(o.id);});
+    localStorage.setItem(readKey,JSON.stringify(readIds));
+    notifBell.style.color='white';
+    notifBell.style.animation='none';
+    notifCount.style.display='none';
+  }
+}
+
+window.closeView=function(){document.getElementById('viewModal').classList.remove('active');document.getElementById('viewBody').innerHTML='';}
+window.viewFile=async function(fileName){
+  const modal=document.getElementById('viewModal');const body=document.getElementById('viewBody');
+  document.getElementById('viewFileName').textContent=fileName;modal.classList.add('active');
+  body.innerHTML='<p style="color:#aaa"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</p>';
+  try{const {data,error}=await supabase.storage.from('orders').createSignedUrl(fileName,3600);if(error) throw error;const url=data.signedUrl;if(fileName.toLowerCase().endsWith('.pdf')){body.innerHTML=`<iframe src="${url}" style="width:100%;height:80vh;border:none;background:white;border-radius:8px"></iframe>`;}else{body.innerHTML=`<img src="${url}" style="max-width:100%;max-height:80vh;border-radius:10px">`;}}catch(e){body.innerHTML=`<p style="color:#ff6666">Failed: ${e.message}</p>`;}
+}
+window.deleteOrder=async function(id,fileName){if(!confirm(`Delete?\n${fileName}`)) return;try{const {error}=await supabase.from('orders').delete().eq('id',id);if(error) throw error;await supabase.storage.from('orders').remove([fileName]);alert('Deleted!');loadMyOrders();loadNotifs();}catch(e){alert('Delete failed: '+e.message);}}
+window.toggleEye=function(inputId, btn){
+  const input=document.getElementById(inputId);
+  const icon=btn.querySelector('i');
+  if(input.type==='password'){input.type='text';icon.classList.remove('fa-eye');icon.classList.add('fa-eye-slash');btn.style.color='#f9c23c';}
+  else{input.type='password';icon.classList.remove('fa-eye-slash');icon.classList.add('fa-eye');btn.style.color='#888';}
+}
+window.changePassword=async function(){
+  const newPass=document.getElementById('newPass').value.trim(),confirmPass=document.getElementById('confirmPass').value.trim(),msg=document.getElementById('passMsg');
+  msg.style.display='block';
+  if(!newPass||!confirmPass){msg.style.color='#ff4444';msg.textContent='❌ Fill both!';return;}
+  if(newPass.length<6){msg.style.color='#ff4444';msg.textContent='❌ At least 6 chars!';return;}
+  if(newPass!==confirmPass){msg.style.color='#ff4444';msg.textContent='❌ Not match!';return;}
+  const btn=document.getElementById('changePassBtn');btn.textContent='Updating...';btn.disabled=true;
+  const {error}=await supabase.auth.updateUser({password:newPass});
+  if(error){msg.style.color='#ff4444';msg.textContent='❌ '+error.message;btn.textContent='Update Password';btn.disabled=false;}else{msg.style.color='#00ff88';msg.textContent='✅ Changed!';document.getElementById('newPass').value='';document.getElementById('confirmPass').value='';btn.textContent='Updated!';setTimeout(()=>{btn.textContent='Update Password';btn.disabled=false;msg.style.display='none';},2000);}
+}
+const {data:{session}}=await supabase.auth.getSession();
+if(session){
+  const user=session.user;if(user.email.toLowerCase()===ADMIN_EMAIL){window.location.href='admin.html';}
+  publicView.style.display='none';customerApp.classList.add('active');
+  let raw=user.user_metadata?.full_name||user.email.split('@')[0];let displayName=raw.split(' ').map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(' ');
+  welcomeText.textContent=`Welcome, ${displayName}`;welcomeText.style.display='block';notifBell.style.display='block';
+  document.getElementById('pName').textContent=displayName;document.getElementById('avatarLetter').textContent=displayName.charAt(0).toUpperCase();document.getElementById('pEmailShort').textContent=user.email.replace(/(.{3}).*(@.*)/,"$1****$2");document.getElementById('pEmailFull').textContent=user.email;if(document.getElementById('welcomeNameInline')){document.getElementById('welcomeNameInline').textContent=displayName+'!';}
+  topBtn.onclick=async()=>{await supabase.auth.signOut();localStorage.removeItem('ph_go_to');location.reload();};
+  loadNotifs();loadMyOrders();setTimeout(()=>{const goToPage=localStorage.getItem('ph_go_to');if(goToPage){customerGo(goToPage);localStorage.removeItem('ph_go_to');}},400);
+}else{
+  publicView.style.display='block';customerApp.classList.remove('active');
+  if(topBtnPub){topBtnPub.textContent='Get Started';topBtnPub.onclick=()=>location.href='login.html';}
+  if(middleBtnPub){middleBtnPub.textContent='Get Started — Order Now →';middleBtnPub.onclick=()=>location.href='login.html';}
+}
+
+async function loadNotifs(){
+  if(!session) return;
+  const readKey='ph_read_notifs_v2';
+  const readIds=JSON.parse(localStorage.getItem(readKey)||'[]');
+  const {data}=await supabase.from('orders').select('*').eq('customer_email',session.user.email).or('status.ilike.%complet%,status.ilike.%done%,status.eq.Completed,status.eq.Done').order('created_at',{ascending:false}).limit(20);
+  if(!data||data.length===0){notifList.innerHTML=`<div style="text-align:center;padding:20px"><i class="fa-solid fa-bell-slash" style="font-size:24px;color:#444"></i><p style="color:#666;font-size:12px;margin-top:8px">No completed prints yet<br><small>We will notify when admin prints</small></p></div>`;notifCount.style.display='none';currentNotifs=[];return;}
+  currentNotifs=data;
+  const unread=data.filter(o=>!readIds.includes(o.id));
+  if(unread.length>0){
+    notifCount.style.display='block';
+    notifCount.textContent=unread.length>9?'9+':unread.length;
+    notifCount.style.background='#ff3333';
+    notifCount.style.color='white';
+    notifBell.style.color='#f9c23c';
+    notifBell.style.animation='pulse 1s infinite';
+  }else{
+    notifCount.style.display='none';
+    notifBell.style.color='white';
+    notifBell.style.animation='none';
+  }
+  notifList.innerHTML=data.map(o=>{
+    let displayName=o.file_name||'';if(displayName.includes('_')) displayName=displayName.substring(displayName.indexOf('_')+1);
+    let shortName=displayName.length>35?displayName.substring(0,35)+'...':displayName;
+    const isUnread=!readIds.includes(o.id);
+    return `<div onclick="customerGo('c_orders'); notifDropdown.style.display='none'" style="background:${isUnread?'#2a2510':'#252525'};border:1px solid ${isUnread?'rgba(249,194,60,0.3)':'#333'};padding:10px;border-radius:10px;margin-top:8px;cursor:pointer"><div style="display:flex;justify-content:space-between;align-items:center"><b style="color:#00ff88;font-size:11px"><i class="fa-solid fa-check-circle"></i> PRINTED - READY FOR PICKUP!</b>${isUnread?'<span style="width:8px;height:8px;background:#ff3333;border-radius:50%;display:inline-block"></span>':''}</div><p style="color:white;font-size:12px;margin:6px 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${shortName}</p><small style="color:#aaa;font-size:10px">${new Date(o.created_at).toLocaleDateString()} • ₱${o.amount}</small></div>`;
+  }).join('');
+}
+
+async function loadMyOrders(){
+  if(!session) return;
+  const {data}=await supabase.from('orders').select('*').eq('customer_email',session.user.email).order('created_at',{ascending:false});
+  if(!data||data.length===0){ordersList.innerHTML=`<div style="text-align:center;padding:40px"><p style="color:#666">You don't have any order yet.</p><button onclick="location.href='order.html'" style="margin-top:12px;background:#f9c23c;color:#000;border:none;padding:8px 14px;border-radius:8px;font-weight:900;cursor:pointer">Order Now</button></div>`;return;}
+  if(document.getElementById('totalOrders')) document.getElementById('totalOrders').textContent=`${data.length} orders`;
+  ordersList.innerHTML=data.map(o=>{
+    const isDone=o.status.toLowerCase().includes('complet')||o.status.toLowerCase()==='done';
+    const safeName=encodeURIComponent(o.file_name||'');
+    let displayName=o.file_name||'';if(displayName.includes('_')) displayName=displayName.substring(displayName.indexOf('_')+1);
+    let shortName=displayName.length>50?displayName.substring(0,50)+'...':displayName;
+    const icon=o.file_name.toLowerCase().endsWith('.pdf')?'fa-file-pdf':o.file_name.toLowerCase().match(/\.(jpg|jpeg|png)/)?'fa-file-image':'fa-file-word';
+    return `<div class="orderItem"><div style="flex:1;min-width:0"><b style="font-size:13px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${o.file_name}"><i class="fa-solid ${icon}" style="color:#f9c23c;margin-right:6px"></i>${shortName}</b><small style="color:#888">${o.print_type||'Print'} • ${o.pages||1} pg • ${o.copies||1} cp • ₱${o.amount||0}</small><br><span style="display:inline-block;margin-top:4px;padding:2px 8px;border-radius:6px;font-size:9px;font-weight:900;background:${isDone?'#00ff88':'#f9c23c'};color:#000">${o.status.toUpperCase()}</span></div><div style="display:flex;gap:8px;flex-shrink:0"><button class="viewBtn" onclick="viewFile(decodeURIComponent('${safeName}'))"><i class="fa-solid fa-eye"></i> View</button><button class="deleteBtn" onclick="deleteOrder('${o.id}', decodeURIComponent('${safeName}'))"><i class="fa-solid fa-trash"></i></button></div></div>`;
+  }).join('');
+}
+document.addEventListener('click',(e)=>{
+  const bell=document.getElementById('notifBell');
+  const drop=document.getElementById('notifDropdown');
+  if(drop.style.display==='block' && !bell.contains(e.target) && !drop.contains(e.target)){
+    drop.style.display='none';
+  }
+});
+const observer=new IntersectionObserver((entries)=>{entries.forEach(entry=>{if(entry.isIntersecting){setActive(entry.target.id);}});},{root:null,rootMargin:"-50% 0px -50% 0px",threshold:0});
+document.querySelectorAll('#publicView .secWrap, #publicView #home').forEach(sec=>{observer.observe(sec);});
+</script>
+</body>
+</html>
