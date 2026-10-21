@@ -1,211 +1,358 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin - PrintHub</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
-    body{background:#0a0a0a;color:white;display:flex;min-height:100vh}
-    .sidebar{width:240px;background:#0f0f0f;border-right:1px solid #1e1e1e;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column}
-    .logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;margin-bottom:18px}
-    .logo-icon{width:32px;height:32px;background:#f9c23c;border-radius:8px;display:grid;place-items:center;color:#000}
-    .sideLabel{font-size:11px;color:#f9c23c;font-weight:900;margin:14px 8px 8px;letter-spacing:1.5px;background:#1a1a1a;border:1px solid #f9c23c;padding:8px;border-radius:8px;text-align:center}
-    .navBtn{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:none;background:transparent;color:#aaa;border-radius:10px;cursor:pointer;font-size:13px;margin-bottom:6px;transition:0.2s}
-    .navBtn.active{background:#f9c23c;color:#000;font-weight:900;box-shadow:0 2px 8px rgba(249,194,60,0.3)}
-    .navBtn:hover:not(.active){background:#1a1a1a;color:#fff}
-
-    .logoutWrap{margin-top:auto}
-    .logoutBtn{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid transparent;background:transparent;color:#888;border-radius:10px;cursor:pointer;font-size:13px;transition:0.2s}
-    .logoutBtn:hover{background:#ff3b3b!important;color:white!important;border-color:#ff3b3b!important;box-shadow:0 2px 10px rgba(255,59,59,0.4)}
-    .main{flex:1;padding:20px 22px;overflow-y:auto}
-    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
-    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
-    .stat{background:#151515;border:1px solid #222;border-radius:14px;padding:16px}
-    .stat h2{font-size:24px;font-weight:900;color:#f9c23c}
-    .chartWrap{background:#121212;border:1px solid #222;border-radius:14px;padding:16px;margin-bottom:18px}
-    .chartHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
-    .chartBtns{display:flex;gap:6px;background:#0a0a0a;padding:4px;border-radius:8px;border:1px solid #222}
-    .cBtn{padding:6px 12px;border:none;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;background:transparent;color:#888}
-    .cBtn.active{background:#f9c23c;color:#000}
-    .chartInfo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-    .cInfo{background:#0a0a0a;border:1px solid #222;border-radius:10px;padding:10px;text-align:center}
-    .cInfo b{color:#f9c23c;font-size:16px;display:block} .cInfo small{color:#666;font-size:10px}
-    .tableWrap{background:#121212;border:1px solid #1f1f1f;border-radius:14px;padding:14px;overflow-x:auto}
-    table{width:100%;border-collapse:collapse;min-width:850px}
-    th{font-size:11px;color:#666;text-align:left;padding:10px 8px;border-bottom:1px solid #222}
-    td{font-size:12px;padding:10px 8px;border-bottom:1px solid #1a1a1a}
-    .badge{padding:4px 8px;border-radius:6px;font-size:10px;font-weight:900}
-    .btn{padding:6px 10px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:800}
-    .btnView{background:#f9c23c;color:#000} .btnPrint{background:#00ff88;color:#000;margin-left:4px} .btnDel{background:#1a1a1a;border:1px solid #ff3b3b;color:#ff3b3b;margin-left:4px}
-    #imageModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;align-items:center;justify-content:center;padding:20px}
-    .modalBox{width:90%;max-width:900px;background:#121212;border:1px solid #f9c23c;border-radius:14px;padding:14px}
-    #modalImage{width:100%;max-height:70vh;object-fit:contain;display:none} #modalPdf{width:100%;height:75vh;border:none;display:none;background:white;border-radius:8px}
-    #ordersPanel,#usersPanel,#settingsPanel{display:none}
-    .userHeader{background:#121212;border:1px solid #222;border-radius:14px;padding:14px;margin-bottom:14px}
-    #userSearch,#orderSearch{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px;color:white;font-size:12px;margin-top:8px}
-    .usersLayout{display:grid;grid-template-columns:2fr 1fr;gap:14px}
-    .userCard{background:#121212;border:1px solid #1f1f1f;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-    .userCard.newUser{border-color:#f9c23c;background:#1a1500}
-    .uBtn{padding:5px 8px;border-radius:6px;border:none;font-size:10px;font-weight:800;cursor:pointer;margin-left:3px}
-    .addAccountCard{background:#121212;border:1px solid #222;border-radius:14px;padding:16px;position:sticky;top:20px}
-    .addAccountCard h3{font-size:13px;color:#f9c23c;margin-bottom:12px;font-weight:900}
-    .addAccountCard label{font-size:11px;color:#888;display:block;margin-bottom:4px;margin-top:10px}
-    .addAccountCard input{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px;color:white;font-size:12px}
-    .addBtn{width:100%;background:#f9c23c;color:#000;border:none;padding:11px;border-radius:8px;font-weight:900;cursor:pointer;margin-top:14px}
-    .setCard{background:#121212;border:1px solid #1f1f1f;border-radius:14px;padding:16px;margin-bottom:12px}
-    .saveBtn{width:100%;background:#f9c23c;color:#000;border:none;padding:12px;border-radius:10px;font-weight:900;cursor:pointer}
-    .passWrap{position:relative;width:100%;margin-top:6px}
-    .passWrap input{width:100%!important;background:#0a0a0a!important;color:white!important;border:1px solid #2a2a2a!important;border-radius:8px!important;padding:10px 40px 10px 12px!important;text-align:left!important}
-    .eyeBtn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;width:30px;height:28px;cursor:pointer;display:grid;place-items:center}
-    @media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)} .usersLayout{grid-template-columns:1fr} .chartInfo{grid-template-columns:1fr}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - PrintHub</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,sans-serif}
+body{background:#0a0a0a;color:white;display:flex;min-height:100vh}
+.sidebar{width:240px;background:#0f0f0f;border-right:1px solid #1e1e1e;padding:18px 12px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:18px;margin-bottom:18px}
+.logo-icon{width:32px;height:32px;background:#f9c23c;border-radius:8px;display:grid;place-items:center;color:#000}
+.sideLabel{font-size:11px;color:#f9c23c;font-weight:900;margin:14px 8px 8px;letter-spacing:1.5px;background:#1a1a1a;border:1px solid #f9c23c;padding:8px;border-radius:8px;text-align:center}
+.navBtn{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:none;background:transparent;color:#aaa;border-radius:10px;cursor:pointer;font-size:13px;margin-bottom:6px;transition:0.2s}
+.navBtn.active{background:#f9c23c;color:#000;font-weight:900;box-shadow:0 2px 8px rgba(249,194,60,0.3)}
+.navBtn:hover:not(.active){background:#1a1a1a;color:#fff}
+.logoutWrap{margin-top:auto}
+.logoutBtn{width:100%;display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid transparent;background:transparent;color:#888;border-radius:10px;cursor:pointer;font-size:13px;transition:0.2s}
+.logoutBtn:hover{background:#ff3b3b!important;color:white!important;border-color:#ff3b3b!important;box-shadow:0 2px 10px rgba(255,59,59,0.4)}
+.main{flex:1;padding:20px 22px;overflow-y:auto}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat{background:#151515;border:1px solid #222;border-radius:14px;padding:16px}
+.stat h2{font-size:24px;font-weight:900;color:#f9c23c}
+.chartWrap{background:#121212;border:1px solid #222;border-radius:14px;padding:16px;margin-bottom:18px}
+.chartHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.chartBtns{display:flex;gap:6px;background:#0a0a0a;padding:4px;border-radius:8px;border:1px solid #222}
+.cBtn{padding:6px 12px;border:none;border-radius:6px;font-size:11px;font-weight:800;cursor:pointer;background:transparent;color:#888}
+.cBtn.active{background:#f9c23c;color:#000}
+.chartInfo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.cInfo{background:#0a0a0a;border:1px solid #222;border-radius:10px;padding:10px;text-align:center}
+.cInfo b{color:#f9c23c;font-size:16px;display:block}
+.cInfo small{color:#666;font-size:10px}
+.tableWrap{background:#121212;border:1px solid #1f1f1f;border-radius:14px;padding:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:850px}
+th{font-size:11px;color:#666;text-align:left;padding:10px 8px;border-bottom:1px solid #222}
+td{font-size:12px;padding:10px 8px;border-bottom:1px solid #1a1a1a}
+.badge{padding:4px 8px;border-radius:6px;font-size:10px;font-weight:900}
+.btn{padding:6px 10px;border-radius:7px;border:none;cursor:pointer;font-size:11px;font-weight:800}
+.btnView{background:#f9c23c;color:#000}
+.btnPrint{background:#00ff88;color:#000;margin-left:4px}
+.btnDel{background:#1a1a1a;border:1px solid #ff3b3b;color:#ff3b3b;margin-left:4px}
+#imageModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;align-items:center;justify-content:center;padding:20px}
+.modalBox{width:90%;max-width:900px;background:#121212;border:1px solid #f9c23c;border-radius:14px;padding:14px}
+#modalImage{width:100%;max-height:70vh;object-fit:contain;display:none}
+#modalPdf{width:100%;height:75vh;border:none;display:none;background:white;border-radius:8px}
+#ordersPanel,#usersPanel,#settingsPanel{display:none}
+.userHeader{background:#121212;border:1px solid #222;border-radius:14px;padding:14px;margin-bottom:14px}
+#userSearch,#orderSearch{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px;color:white;font-size:12px;margin-top:8px}
+.usersLayout{display:grid;grid-template-columns:2fr 1fr;gap:14px}
+.userCard{background:#121212;border:1px solid #1f1f1f;border-radius:10px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.userCard.newUser{border-color:#f9c23c;background:#1a1500}
+.uBtn{padding:5px 8px;border-radius:6px;border:none;font-size:10px;font-weight:800;cursor:pointer;margin-left:3px}
+.addAccountCard{background:#121212;border:1px solid #222;border-radius:14px;padding:16px;position:sticky;top:20px}
+.addAccountCard h3{font-size:13px;color:#f9c23c;margin-bottom:12px;font-weight:900}
+.addAccountCard label{font-size:11px;color:#888;display:block;margin-bottom:4px;margin-top:10px}
+.addAccountCard input{width:100%;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:10px;color:white;font-size:12px}
+.addBtn{width:100%;background:#f9c23c;color:#000;border:none;padding:11px;border-radius:8px;font-weight:900;cursor:pointer;margin-top:14px}
+.setCard{background:#121212;border:1px solid #1f1f1f;border-radius:14px;padding:16px;margin-bottom:12px}
+.saveBtn{width:100%;background:#f9c23c;color:#000;border:none;padding:12px;border-radius:10px;font-weight:900;cursor:pointer}
+.passWrap{position:relative;width:100%;margin-top:6px}
+.passWrap input{width:100%!important;background:#0a0a0a!important;color:white!important;border:1px solid #2a2a2a!important;border-radius:8px!important;padding:10px 40px 10px 12px!important;text-align:left!important}
+.eyeBtn{position:absolute;right:8px;top:50%;transform:translateY(-50%);background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;width:30px;height:28px;cursor:pointer;display:grid;place-items:center}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)} .usersLayout{grid-template-columns:1fr} .chartInfo{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-  <div class="sidebar">
-    <div>
-      <div class="logo"><div class="logo-icon">🖨️</div>PrintHub</div>
-      <div class="sideLabel">ADMIN PANEL</div>
-      <button class="navBtn active" id="bDash" onclick="switchTab('dash')">📊 Dashboard</button>
-      <button class="navBtn" id="bOrders" onclick="switchTab('orders')">📦 Orders</button>
-      <button class="navBtn" id="bUsers" onclick="switchTab('users')">👤 Users Profile</button>
-      <button class="navBtn" id="bSet" onclick="switchTab('settings')">⚙️ Settings</button>
-    </div>
-    <div class="logoutWrap">
-      <button class="logoutBtn" id="logoutSide">↪ Log out</button>
-    </div>
-  </div>
-
-  <div class="main">
-    <div class="top"><h1 id="pageTitle">Dashboard</h1><span id="adminEmailTop" style="font-size:11px;color:#666"></span></div>
-
-    <div id="dashSection">
-      <div class="stats">
-        <div class="stat"><h3>Total Orders</h3><h2 id="sTotal">0</h2></div>
-        <div class="stat"><h3>Revenue</h3><h2 id="sRev">₱0</h2></div>
-        <div class="stat"><h3>Pending</h3><h2 id="sPend">0</h2></div>
-        <div class="stat"><h3>Done</h3><h2 id="sDone">0</h2></div>
-      </div>
-      <div class="chartWrap">
-        <div class="chartHeader">
-          <div><h3 style="font-size:14px;color:#f9c23c">📈 Revenue Analytics</h3><small style="color:#666;font-size:11px" id="chartSub">Track your earnings daily, weekly, monthly</small></div>
-          <div class="chartBtns">
-            <button class="cBtn active" id="cDaily" onclick="setChartType('daily')">Daily</button>
-            <button class="cBtn" id="cWeekly" onclick="setChartType('weekly')">Weekly</button>
-            <button class="cBtn" id="cMonthly" onclick="setChartType('monthly')">Monthly</button>
-            <button class="cBtn" id="cYearly" onclick="setChartType('yearly')">Yearly</button>
-          </div>
-        </div>
-        <div class="chartInfo">
-          <div class="cInfo"><small>Best Period</small><b id="cBestDay">-</b><small id="cBestAmount">₱0</small></div>
-          <div class="cInfo"><small>Average</small><b id="cAvg">₱0</b><small id="cAvgLabel">per day</small></div>
-          <div class="cInfo"><small>This Month</small><b id="cThisMonth">₱0</b><small id="cThisMonthLabel">0 orders</small></div>
-        </div>
-        <div style="height:300px;position:relative"><canvas id="revenueChart"></canvas></div>
-      </div>
-    </div>
-
-    <div id="ordersPanel">
-      <div class="userHeader">
-        <div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:14px;color:#f9c23c">📦 All Orders</h2><button onclick="showHiddenOrders()" style="background:#222;border:1px solid #333;color:#888;padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer">↩️ Show Hidden</button></div>
-        <input id="orderSearch" placeholder="Search file, customer, type...">
-        <p style="font-size:11px;color:#666;margin-top:8px"><span id="oCount">0</span> orders <span id="oPendCount" style="color:#f9c23c">• 0 pending</span></p>
-      </div>
-      <div class="tableWrap"><table><thead><tr><th>File</th><th>Customer</th><th>Type</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="ordersTbody"></tbody></table></div>
-    </div>
-
-    <div id="usersPanel">
-      <div class="userHeader"><h2 style="font-size:14px;color:#f9c23c">Users Profile</h2><input id="userSearch" placeholder="Search users..."><p style="font-size:11px;color:#666;margin-top:8px"><span id="uCount">0</span> users <span id="uWithOrder">• 0 with orders</span></p></div>
-      <div class="usersLayout"><div><div id="usersList"></div></div><div class="addAccountCard"><h3>➕ Add Account</h3><label>Full Name</label><input id="addFullName" placeholder="John Doe"><label>Email</label><input id="addEmail" type="email" placeholder="user@email.com"><label>Password</label><input id="addPassword" type="password" placeholder="Min 6 chars"><button class="addBtn" onclick="addNewAccount()">Create Account</button><small style="color:#00ff88;font-size:10px;display:block;margin-top:10px">✅ Can login immediately.</small></div></div>
-    </div>
-
-    <div id="settingsPanel">
-      <div class="setCard" style="border-color:#f9c23c"><h3>👑 My Admin Account</h3><div style="margin-bottom:12px"><label style="font-size:11px;color:#888">Admin Email</label><div class="passWrap"><input id="adminGmailDisplay" readonly style="color:#f9c23c!important;font-weight:800"></div></div><div style="margin-bottom:12px"><label style="font-size:11px;color:#888">New Password</label><div class="passWrap"><input id="newPass" type="password" placeholder="Enter new password"><button class="eyeBtn" onclick="toggleEye('newPass',this)">👁️</button></div></div><div style="margin-bottom:12px"><label style="font-size:11px;color:#888">Confirm Password</label><div class="passWrap"><input id="confirmPass" type="password" placeholder="Confirm new password"><button class="eyeBtn" onclick="toggleEye('confirmPass',this)">👁️</button></div></div><button onclick="changeAdminPassword()" style="width:100%;background:#f9c23c;color:#000;border:none;padding:11px;border-radius:8px;font-weight:900;cursor:pointer">🔑 Change My Password</button></div>
-      <button class="saveBtn" onclick="saveSettings()">💾 Save Settings</button>
-    </div>
-  </div>
-
-  <div id="imageModal"><div class="modalBox"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><b id="modalFileName" style="font-size:12px"></b><div style="display:flex;gap:8px"><button id="modalPrintBtn" style="display:none;background:#00ff88;color:#000;border:none;padding:6px 12px;border-radius:6px;font-weight:900;cursor:pointer">🖨️ Print & Complete</button><button onclick="closeModal()" style="background:transparent;border:none;color:white;font-size:18px;cursor:pointer">✕</button></div></div><img id="modalImage"><iframe id="modalPdf"></iframe><div style="margin-top:10px;display:flex;justify-content:space-between"><small id="loadStatus" style="color:#666;font-size:11px"></small><a id="modalDownload" target="_blank" class="btn btnView" style="text-decoration:none">Download</a></div></div></div>
+<div class="sidebar">
+<div>
+<div class="logo"><div class="logo-icon">🖨️</div>PrintHub</div>
+<div class="sideLabel">ADMIN PANEL</div>
+<button class="navBtn active" id="bDash" onclick="switchTab('dash')">📊 Dashboard</button>
+<button class="navBtn" id="bOrders" onclick="switchTab('orders')">📦 Orders</button>
+<button class="navBtn" id="bUsers" onclick="switchTab('users')">👤 Users Profile</button>
+<button class="navBtn" id="bSet" onclick="switchTab('settings')">⚙️ Settings</button>
+</div>
+<div class="logoutWrap"><button class="logoutBtn" id="logoutSide">↪ Log out</button></div>
+</div>
+<div class="main">
+<div class="top"><h1 id="pageTitle">Dashboard</h1><span id="adminEmailTop" style="font-size:11px;color:#666"></span></div>
+<div id="dashSection">
+<div class="stats">
+<div class="stat"><h3>Total Orders</h3><h2 id="sTotal">0</h2></div>
+<div class="stat"><h3>Revenue</h3><h2 id="sRev">₱0</h2></div>
+<div class="stat"><h3>Pending</h3><h2 id="sPend">0</h2></div>
+<div class="stat"><h3>Done</h3><h2 id="sDone">0</h2></div>
+</div>
+<div class="chartWrap">
+<div class="chartHeader">
+<div><h3 style="font-size:14px;color:#f9c23c">📈 Revenue Analytics</h3><small style="color:#666;font-size:11px" id="chartSub">Track your earnings daily, weekly, monthly</small></div>
+<div class="chartBtns">
+<button class="cBtn active" id="cDaily" onclick="setChartType('daily')">Daily</button>
+<button class="cBtn" id="cWeekly" onclick="setChartType('weekly')">Weekly</button>
+<button class="cBtn" id="cMonthly" onclick="setChartType('monthly')">Monthly</button>
+<button class="cBtn" id="cYearly" onclick="setChartType('yearly')">Yearly</button>
+</div>
+</div>
+<div class="chartInfo">
+<div class="cInfo"><small>Best Period</small><b id="cBestDay">-</b><small id="cBestAmount">₱0</small></div>
+<div class="cInfo"><small>Average</small><b id="cAvg">₱0</b><small id="cAvgLabel">per day</small></div>
+<div class="cInfo"><small>This Month</small><b id="cThisMonth">₱0</b><small id="cThisMonthLabel">0 orders</small></div>
+</div>
+<div style="height:300px;position:relative"><canvas id="revenueChart"></canvas></div>
+</div>
+</div>
+<div id="ordersPanel">
+<div class="userHeader">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="font-size:14px;color:#f9c23c">📦 All Orders</h2><button onclick="loadDashboard()" style="background:#222;border:1px solid #333;color:#aaa;padding:5px 10px;border-radius:6px;font-size:10px;cursor:pointer">🔄 Refresh</button></div>
+<input id="orderSearch" placeholder="Search file, customer, type...">
+<p style="font-size:11px;color:#666;margin-top:8px"><span id="oCount">0</span> orders <span id="oPendCount" style="color:#f9c23c">• 0 pending</span></p>
+</div>
+<div class="tableWrap"><table><thead><tr><th>File</th><th>Customer</th><th>Type</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="ordersTbody"></tbody></table></div>
+</div>
+<div id="usersPanel">
+<div class="userHeader"><h2 style="font-size:14px;color:#f9c23c">Users Profile</h2><input id="userSearch" placeholder="Search users..."><p style="font-size:11px;color:#666;margin-top:8px"><span id="uCount">0</span> users <span id="uWithOrder">• 0 with orders</span></p></div>
+<div class="usersLayout"><div><div id="usersList"></div></div><div class="addAccountCard"><h3>➕ Add Account</h3><label>Full Name</label><input id="addFullName" placeholder="John Doe"><label>Email</label><input id="addEmail" type="email" placeholder="user@email.com"><label>Password</label><input id="addPassword" type="password" placeholder="Min 6 chars"><button class="addBtn" onclick="addNewAccount()">Create Account</button><small style="color:#00ff88;font-size:10px;display:block;margin-top:10px">✅ Can login immediately.</small></div></div>
+</div>
+<div id="settingsPanel">
+<div class="setCard" style="border-color:#f9c23c"><h3>👑 My Admin Account</h3><div style="margin-bottom:12px"><label style="font-size:11px;color:#888">Admin Email</label><div class="passWrap"><input id="adminGmailDisplay" readonly style="color:#f9c23c!important;font-weight:800"></div></div><div style="margin-bottom:12px"><label style="font-size:11px;color:#888">New Password</label><div class="passWrap"><input id="newPass" type="password" placeholder="Enter new password"><button class="eyeBtn" onclick="toggleEye('newPass',this)">👁️</button></div></div><div style="margin-bottom:12px"><label style="font-size:11px;color:#888">Confirm Password</label><div class="passWrap"><input id="confirmPass" type="password" placeholder="Confirm new password"><button class="eyeBtn" onclick="toggleEye('confirmPass',this)">👁️</button></div></div><button onclick="changeAdminPassword()" style="width:100%;background:#f9c23c;color:#000;border:none;padding:11px;border-radius:8px;font-weight:900;cursor:pointer">🔑 Change My Password</button></div>
+<button class="saveBtn" onclick="saveSettings()">💾 Save Settings</button>
+</div>
+</div>
+<div id="imageModal"><div class="modalBox"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><b id="modalFileName" style="font-size:12px"></b><div style="display:flex;gap:8px"><button id="modalPrintBtn" style="display:none;background:#00ff88;color:#000;border:none;padding:6px 12px;border-radius:6px;font-weight:900;cursor:pointer">🖨️ Print & Complete</button><button onclick="closeModal()" style="background:transparent;border:none;color:white;font-size:18px;cursor:pointer">✕</button></div></div><img id="modalImage"><iframe id="modalPdf"></iframe><div style="margin-top:10px;display:flex;justify-content:space-between"><small id="loadStatus" style="color:#666;font-size:11px"></small><a id="modalDownload" target="_blank" class="btn btnView" style="text-decoration:none">Download</a></div></div></div>
 
 <script type="module">
-  import { supabase } from './supabase.js';
-  let allOrders=[], allUsersData=[], chartType='daily', revenueChart=null;
-  const { data: { session } } = await supabase.auth.getSession();
-  if(!session) location.href='login.html';
-  document.getElementById('adminEmailTop').textContent=session.user.email;
-  document.getElementById('adminGmailDisplay').value=session.user.email;
-  document.getElementById('logoutSide').onclick=async()=>{ await supabase.auth.signOut(); location.href='login.html'; };
+import { supabase } from './supabase.js';
+let allOrders=[], allUsersData=[], chartType='daily', revenueChart=null;
+const { data: { session } } = await supabase.auth.getSession();
+if(!session) location.href='login.html';
+document.getElementById('adminEmailTop').textContent=session.user.email;
+document.getElementById('adminGmailDisplay').value=session.user.email;
+document.getElementById('logoutSide').onclick=async()=>{ await supabase.auth.signOut(); location.href='login.html'; };
 
-  async function loadDashboard(){
-    const { data } = await supabase.from('orders').select('*').order('created_at',{ascending:false});
-    allOrders=data||[];
-    const done=allOrders.filter(o=>o.status.toLowerCase().includes('complet')||o.status.toLowerCase()==='done');
-    document.getElementById('sTotal').textContent=allOrders.length;
-    document.getElementById('sPend').textContent=allOrders.length-done.length;
-    document.getElementById('sDone').textContent=done.length;
-    document.getElementById('sRev').textContent=`₱${done.reduce((a,b)=>a+Number(b.amount||0),0)}`;
-    document.getElementById('oCount').textContent=allOrders.length;
-    document.getElementById('oPendCount').textContent=`• ${allOrders.length-done.length} pending`;
-    renderOrdersTable(allOrders);
-    renderRevenueChart();
-  }
-  function renderOrdersTable(arr){
-    document.getElementById('ordersTbody').innerHTML=arr.map(o=>{
-      const isDone=o.status.toLowerCase().includes('complet')||o.status.toLowerCase()==='done';
-      const safeFile=o.file_name.replace(/'/g,"\\'"); const safeUrl=(o.file_url||'').replace(/'/g,"\\'");
-      return `<tr><td><b>${o.file_name}</b></td><td>${o.customer_email}</td><td>${o.print_type||'-'}</td><td>₱${o.amount||0}</td><td><span class="badge" style="${isDone?'background:#00ff88;color:#000':'background:#f9c23c;color:#000'}">${o.status.toUpperCase()}</span></td><td><button class="btn btnView" onclick="viewImage('${safeFile}','${safeUrl}','${o.id}','${o.status}')">View</button>${isDone?`<button class="btn btnDel" onclick="deleteOrder('${o.id}')">🗑️</button>`:`<button class="btn btnPrint" onclick="printOrder('${o.id}')">🖨️ Print</button><button class="btn btnDel" onclick="deleteOrder('${o.id}')">🗑️</button>`}</td></tr>`;
-    }).join('');
-  }
-  function renderRevenueChart(){
-    const completed=allOrders.filter(o=>o.status.toLowerCase().includes('complet')||o.status.toLowerCase()==='done');
-    let labels=[],values=[],bestDay='-',bestAmount=0;
-    if(chartType==='daily'){
-      for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const dayStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); const dayKey=d.toISOString().split('T')[0]; const dayTotal=completed.filter(o=>o.created_at.startsWith(dayKey)).reduce((a,b)=>a+Number(b.amount||0),0); labels.push(dayStr); values.push(dayTotal); if(dayTotal>bestAmount){bestAmount=dayTotal; bestDay=dayStr;} }
-      document.getElementById('cAvgLabel').textContent='per day'; document.getElementById('chartSub').textContent='Last 7 days revenue';
-    }else if(chartType==='weekly'){
-      for(let i=3;i>=0;i--){ const weekStr=`Week ${4-i}`; const weekTotal=completed.filter(o=>{ const od=new Date(o.created_at); const diff=Math.floor((new Date()-od)/(7*24*60*60*1000)); return diff===i; }).reduce((a,b)=>a+Number(b.amount||0),0); labels.push(weekStr); values.push(weekTotal); if(weekTotal>bestAmount){bestAmount=weekTotal; bestDay=weekStr;} }
-      document.getElementById('cAvgLabel').textContent='per week'; document.getElementById('chartSub').textContent='Last 4 weeks';
-    }else if(chartType==='monthly'){
-      for(let i=5;i>=0;i--){ const d=new Date(); d.setMonth(d.getMonth()-i); const monthStr=d.toLocaleDateString('en-US',{month:'short'}); const monthKey=d.toISOString().slice(0,7); const monthTotal=completed.filter(o=>o.created_at.startsWith(monthKey)).reduce((a,b)=>a+Number(b.amount||0),0); labels.push(monthStr); values.push(monthTotal); if(monthTotal>bestAmount){bestAmount=monthTotal; bestDay=monthStr;} }
-      document.getElementById('cAvgLabel').textContent='per month'; document.getElementById('chartSub').textContent='Last 6 months';
-    }else{
-      for(let i=3;i>=0;i--){ const year=new Date().getFullYear()-i; const yearTotal=completed.filter(o=>new Date(o.created_at).getFullYear()===year).reduce((a,b)=>a+Number(b.amount||0),0); labels.push(year.toString()); values.push(yearTotal); if(yearTotal>bestAmount){bestAmount=yearTotal; bestDay=year.toString();} }
-      document.getElementById('cAvgLabel').textContent='per year'; document.getElementById('chartSub').textContent='Last 4 years';
-    }
-    const total=values.reduce((a,b)=>a+b,0); const avg=values.length?Math.round(total/values.length):0;
-    const thisMonthTotal=completed.filter(o=>o.created_at.startsWith(new Date().toISOString().slice(0,7))).reduce((a,b)=>a+Number(b.amount||0),0);
-    const thisMonthCount=completed.filter(o=>o.created_at.startsWith(new Date().toISOString().slice(0,7))).length;
-    document.getElementById('cBestDay').textContent=bestDay; document.getElementById('cBestAmount').textContent=`₱${bestAmount} - highest`; document.getElementById('cAvg').textContent=`₱${avg}`; document.getElementById('cThisMonth').textContent=`₱${thisMonthTotal}`; document.getElementById('cThisMonthLabel').textContent=`${thisMonthCount} orders this month`;
-    const ctx=document.getElementById('revenueChart').getContext('2d'); if(revenueChart) revenueChart.destroy();
-    revenueChart=new Chart(ctx,{ type:'bar', data:{ labels:labels, datasets:[{ label:'Revenue', data:values, backgroundColor: values.map(v=> v===bestAmount && v>0 ? '#f9c23c' : '#00ff88'), borderRadius:8 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, grid:{color:'#222'}, ticks:{color:'#888'} }, x:{ grid:{display:false}, ticks:{color:'#aaa'} } } } });
-  }
-  window.setChartType=(type)=>{ chartType=type; document.querySelectorAll('.cBtn').forEach(b=>b.classList.remove('active')); document.getElementById('c'+type.charAt(0).toUpperCase()+type.slice(1)).classList.add('active'); renderRevenueChart(); }
-  window.printOrder=async(id)=>{ if(!confirm('Print and mark as Completed? Customer will be notified.')) return; await supabase.from('orders').update({ status:'Completed' }).eq('id', id); alert('✅ Completed!'); loadDashboard(); closeModal(); }
-  window.deleteOrder=async(id)=>{ if(!confirm('Hide this order from admin panel only?')) return; let hidden=JSON.parse(localStorage.getItem('admin_hidden_orders')||'[]'); hidden.push(id); localStorage.setItem('admin_hidden_orders',JSON.stringify(hidden)); loadDashboard(); }
-  window.showHiddenOrders=()=>{ let h=JSON.parse(localStorage.getItem('admin_hidden_orders')||'[]'); if(h.length===0){ alert('No hidden orders'); return; } if(confirm(`Restore ${h.length} orders?`)){ localStorage.removeItem('admin_hidden_orders'); loadDashboard(); } }
-  async function loadUsers(){ const { data: ordersData }=await supabase.from('orders').select('*'); let profiles=[]; try{ const {data}=await supabase.from('profiles').select('*'); if(data) profiles=data; }catch(e){} let map=new Map(); profiles.forEach(p=>{ map.set(p.email.toLowerCase(),{ email:p.email, full_name:p.full_name||p.email.split('@')[0], total_orders:(ordersData||[]).filter(o=>o.customer_email.toLowerCase()===p.email.toLowerCase()).length })}); (ordersData||[]).forEach(o=>{ if(!map.has(o.customer_email.toLowerCase())) map.set(o.customer_email.toLowerCase(),{ email:o.customer_email, full_name:o.customer_email.split('@')[0], total_orders:(ordersData||[]).filter(x=>x.customer_email.toLowerCase()===o.customer_email.toLowerCase()).length }) }); allUsersData=Array.from(map.values()); document.getElementById('uCount').textContent=allUsersData.length; document.getElementById('uWithOrder').textContent=`• ${allUsersData.filter(u=>u.total_orders>0).length} with orders`; renderUsers(allUsersData); }
-  function renderUsers(arr){ document.getElementById('usersList').innerHTML=arr.map(u=>`<div class="userCard ${u.total_orders===0?'newUser':''}"><div style="flex:1"><b style="font-size:12px">${u.full_name}</b><div style="font-size:10px;color:#888">${u.email} • ${u.total_orders} orders</div></div><div style="display:flex;gap:3px"><button class="uBtn" style="background:#222;color:#f9c23c;border:1px solid #333" onclick="editUserEmail('${u.email}')">✏️</button><button class="uBtn" style="background:#f9c23c;color:#000" onclick="changePass('${u.email}')">🔑</button><button class="uBtn" style="background:#1a1a1a;color:#ff3b3b;border:1px solid #ff3b3b" onclick="deleteUser('${u.email}')">🗑️</button></div></div>`).join(''); }
-  window.addNewAccount=async function(){ const fullName=document.getElementById('addFullName').value.trim(); const email=document.getElementById('addEmail').value.trim(); const password=document.getElementById('addPassword').value.trim(); if(!fullName||!email||!password){ alert('Please fill all fields'); return; } const { data: { session: adminSession } }=await supabase.auth.getSession(); try{ const { data, error }=await supabase.auth.signUp({ email, password, options:{ data:{ full_name:fullName } } }); if(error) throw error; if(data.user) await supabase.from('profiles').insert({ id:data.user.id, email, full_name:fullName }); if(adminSession) await supabase.auth.setSession({ access_token:adminSession.access_token, refresh_token:adminSession.refresh_token }); alert('✅ Account created: '+email+'\nCan login in login.html'); document.getElementById('addFullName').value=''; document.getElementById('addEmail').value=''; document.getElementById('addPassword').value=''; loadUsers(); }catch(e){ alert(e.message); if(adminSession) await supabase.auth.setSession({ access_token:adminSession.access_token, refresh_token:adminSession.refresh_token }); } }
-  window.editUserEmail=async(oldEmail)=>{ const ne=prompt('Enter new email:',oldEmail); if(!ne||ne===oldEmail) return; await supabase.from('profiles').update({email:ne}).eq('email',oldEmail); await supabase.from('orders').update({customer_email:ne}).eq('customer_email',oldEmail); loadUsers(); loadDashboard(); }
-  window.changePass=async(email)=>{ if(confirm('Send password reset email to: '+email)){ await supabase.auth.resetPasswordForEmail(email); alert('✅ Reset email sent to '+email); } }
-  window.deleteUser=async(email)=>{ if(!confirm('Delete user: '+email+'?\nThis will delete all their orders too.')) return; await supabase.from('profiles').delete().eq('email',email); await supabase.from('orders').delete().eq('customer_email',email); alert('✅ Deleted'); loadUsers(); loadDashboard(); }
-  window.viewImage=async(fileName,fileUrl,orderId,status)=>{ const modal=document.getElementById('imageModal'); modal.style.display='flex'; document.getElementById('modalFileName').textContent=fileName; document.getElementById('modalDownload').href=fileUrl||'#'; const btn=document.getElementById('modalPrintBtn'); if(status && !status.toLowerCase().includes('complet')){ btn.style.display='inline-block'; btn.onclick=()=>printOrder(orderId); } else btn.style.display='none'; const img=document.getElementById('modalImage'); const pdf=document.getElementById('modalPdf'); if(fileName.toLowerCase().endsWith('.pdf')){ img.style.display='none'; pdf.style.display='block'; pdf.src=fileUrl; } else { pdf.style.display='none'; img.style.display='block'; img.src=fileUrl; } }
-  window.closeModal=()=>document.getElementById('imageModal').style.display='none';
-  window.toggleEye=(id,btn)=>{ const inp=document.getElementById(id); inp.type=inp.type==='password'?'text':'password'; btn.textContent=inp.type==='password'?'👁️':'🙈'; }
-  window.changeAdminPassword=async()=>{ const np=document.getElementById('newPass').value; const cp=document.getElementById('confirmPass').value; if(!np||!cp){ alert('Please enter password'); return; } if(np!==cp){ alert('Passwords do not match'); return; } if(np.length<6){ alert('At least 6 characters'); return; } const {error}=await supabase.auth.updateUser({password:np}); if(error) alert(error.message); else{ alert('✅ Password changed!'); document.getElementById('newPass').value=''; document.getElementById('confirmPass').value=''; } }
-  window.saveSettings=()=>{ alert('✅ Settings saved!'); }
-  window.switchTab=(tab)=>{
-    document.querySelectorAll('.navBtn').forEach(b=>b.classList.remove('active'));
-    document.getElementById('dashSection').style.display='none'; document.getElementById('ordersPanel').style.display='none'; document.getElementById('usersPanel').style.display='none'; document.getElementById('settingsPanel').style.display='none';
-    if(tab==='dash'){ document.getElementById('bDash').classList.add('active'); document.getElementById('dashSection').style.display='block'; document.getElementById('pageTitle').textContent='Dashboard'; renderRevenueChart(); }
-    if(tab==='orders'){ document.getElementById('bOrders').classList.add('active'); document.getElementById('ordersPanel').style.display='block'; document.getElementById('pageTitle').textContent='Orders'; }
-    if(tab==='users'){ document.getElementById('bUsers').classList.add('active'); document.getElementById('usersPanel').style.display='block'; document.getElementById('pageTitle').textContent='Users Profile'; loadUsers(); }
-    if(tab==='settings'){ document.getElementById('bSet').classList.add('active'); document.getElementById('settingsPanel').style.display='block'; document.getElementById('pageTitle').textContent='Settings'; }
-  };
-  document.getElementById('userSearch').addEventListener('input',e=>{ const q=e.target.value.toLowerCase(); renderUsers(allUsersData.filter(u=>u.email.toLowerCase().includes(q)||u.full_name.toLowerCase().includes(q))); });
-  document.getElementById('orderSearch').addEventListener('input',e=>{ const q=e.target.value.toLowerCase(); renderOrdersTable(allOrders.filter(o=>o.file_name.toLowerCase().includes(q)||o.customer_email.toLowerCase().includes(q)||(o.print_type||'').toLowerCase().includes(q))); });
-  loadDashboard();
+async function loadDashboard(){
+const { data } = await supabase.from('orders').select('*').order('created_at',{ascending:false});
+allOrders=data||[];
+const done=allOrders.filter(o=>o.status.toLowerCase().includes('complet')||o.status.toLowerCase()==='done');
+document.getElementById('sTotal').textContent=allOrders.length;
+document.getElementById('sPend').textContent=allOrders.length-done.length;
+document.getElementById('sDone').textContent=done.length;
+document.getElementById('sRev').textContent=`₱${done.reduce((a,b)=>a+Number(b.amount||0),0)}`;
+document.getElementById('oCount').textContent=allOrders.length;
+document.getElementById('oPendCount').textContent=`• ${allOrders.length-done.length} pending`;
+renderOrdersTable(allOrders);
+renderRevenueChart();
+}
+window.loadDashboard = loadDashboard;
+
+function renderOrdersTable(arr){
+document.getElementById('ordersTbody').innerHTML=arr.map(o=>{
+const isDone=o.status.toLowerCase().includes('complet')||o.status.toLowerCase()==='done';
+const safeFile=o.file_name.replace(/'/g,"\\'");
+const safeUrl=(o.file_url||'').replace(/'/g,"\\'");
+return `<tr><td><b>${o.file_name}</b></td><td>${o.customer_email}</td><td>${o.print_type||'-'}</td><td>₱${o.amount||0}</td><td><span class="badge" style="${isDone?'background:#00ff88;color:#000':'background:#f9c23c;color:#000'}">${o.status.toUpperCase()}</span></td><td><button class="btn btnView" onclick="viewImage('${safeFile}','${safeUrl}','${o.id}','${o.status}')">View</button>${isDone?`<button class="btn btnDel" onclick="deleteOrder('${o.id}')">🗑️</button>`:`<button class="btn btnPrint" onclick="printOrder('${o.id}')">🖨️ Print</button><button class="btn btnDel" onclick="deleteOrder('${o.id}')">🗑️</button>`}</td></tr>`;
+}).join('');
+}
+
+function renderRevenueChart(){
+const completed=allOrders.filter(o=>o.status.toLowerCase().includes('complet')||o.status.toLowerCase()==='done');
+let labels=[],values=[],bestDay='-',bestAmount=0;
+if(chartType==='daily'){
+for(let i=6;i>=0;i--){
+const d=new Date(); d.setDate(d.getDate()-i);
+const dayStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const dayKey=d.toISOString().split('T')[0];
+const dayTotal=completed.filter(o=>o.created_at.startsWith(dayKey)).reduce((a,b)=>a+Number(b.amount||0),0);
+labels.push(dayStr); values.push(dayTotal);
+if(dayTotal>bestAmount){bestAmount=dayTotal; bestDay=dayStr;}
+}
+document.getElementById('cAvgLabel').textContent='per day';
+document.getElementById('chartSub').textContent='Last 7 days revenue';
+}else if(chartType==='weekly'){
+for(let i=3;i>=0;i--){
+const weekStr=`Week ${4-i}`;
+const weekTotal=completed.filter(o=>{
+const od=new Date(o.created_at);
+const diff=Math.floor((new Date()-od)/(7*24*60*60*1000));
+return diff===i;
+}).reduce((a,b)=>a+Number(b.amount||0),0);
+labels.push(weekStr); values.push(weekTotal);
+if(weekTotal>bestAmount){bestAmount=weekTotal; bestDay=weekStr;}
+}
+document.getElementById('cAvgLabel').textContent='per week';
+document.getElementById('chartSub').textContent='Last 4 weeks';
+}else if(chartType==='monthly'){
+for(let i=5;i>=0;i--){
+const d=new Date(); d.setMonth(d.getMonth()-i);
+const monthStr=d.toLocaleDateString('en-US',{month:'short'});
+const monthKey=d.toISOString().slice(0,7);
+const monthTotal=completed.filter(o=>o.created_at.startsWith(monthKey)).reduce((a,b)=>a+Number(b.amount||0),0);
+labels.push(monthStr); values.push(monthTotal);
+if(monthTotal>bestAmount){bestAmount=monthTotal; bestDay=monthStr;}
+}
+document.getElementById('cAvgLabel').textContent='per month';
+document.getElementById('chartSub').textContent='Last 6 months';
+}else{
+for(let i=3;i>=0;i--){
+const year=new Date().getFullYear()-i;
+const yearTotal=completed.filter(o=>new Date(o.created_at).getFullYear()===year).reduce((a,b)=>a+Number(b.amount||0),0);
+labels.push(year.toString()); values.push(yearTotal);
+if(yearTotal>bestAmount){bestAmount=yearTotal; bestDay=year.toString();}
+}
+document.getElementById('cAvgLabel').textContent='per year';
+document.getElementById('chartSub').textContent='Last 4 years';
+}
+const total=values.reduce((a,b)=>a+b,0);
+const avg=values.length?Math.round(total/values.length):0;
+const thisMonthTotal=completed.filter(o=>o.created_at.startsWith(new Date().toISOString().slice(0,7))).reduce((a,b)=>a+Number(b.amount||0),0);
+const thisMonthCount=completed.filter(o=>o.created_at.startsWith(new Date().toISOString().slice(0,7))).length;
+document.getElementById('cBestDay').textContent=bestDay;
+document.getElementById('cBestAmount').textContent=`₱${bestAmount} - highest`;
+document.getElementById('cAvg').textContent=`₱${avg}`;
+document.getElementById('cThisMonth').textContent=`₱${thisMonthTotal}`;
+document.getElementById('cThisMonthLabel').textContent=`${thisMonthCount} orders this month`;
+const ctx=document.getElementById('revenueChart').getContext('2d');
+if(revenueChart) revenueChart.destroy();
+revenueChart=new Chart(ctx,{
+type:'bar',
+data:{ labels:labels, datasets:[{ label:'Revenue', data:values, backgroundColor: values.map(v=> v===bestAmount && v>0 ? '#f9c23c' : '#00ff88'), borderRadius:8 }] },
+options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, grid:{color:'#222'}, ticks:{color:'#888'} }, x:{ grid:{display:false}, ticks:{color:'#aaa'} } } }
+});
+}
+window.setChartType=(type)=>{ chartType=type; document.querySelectorAll('.cBtn').forEach(b=>b.classList.remove('active')); document.getElementById('c'+type.charAt(0).toUpperCase()+type.slice(1)).classList.add('active'); renderRevenueChart(); }
+
+window.printOrder=async(id)=>{
+if(!confirm('Print and mark as Completed?')) return;
+await supabase.from('orders').update({ status:'Completed' }).eq('id', id);
+alert('✅ Completed!');
+loadDashboard();
+closeModal();
+}
+
+// === FIXED NA BOSS - PERMANENT DELETE - MAWAWALA AGAD! ===
+window.deleteOrder=async(id)=>{
+if(!confirm('Permanently DELETE this order? Hindi na mababalik to boss!')) return;
+try{
+const {error}=await supabase.from('orders').delete().eq('id', id);
+if(error){ alert('Delete failed: '+error.message); return; }
+// Tanggalin agad sa UI para mawala agad
+allOrders = allOrders.filter(o=>o.id!==id);
+renderOrdersTable(allOrders);
+loadDashboard();
+closeModal();
+alert('✅ Deleted permanently! Wala na sa database!');
+}catch(e){ alert('Error: '+e.message); }
+}
+
+// TINANGGAL KO NA YUNG SHOW HIDDEN - KASI DELETE NA TALAGA - HINDI HIDE!
+window.showHiddenOrders=()=>{
+alert('Wala nang hidden orders boss - permanent delete na lahat!');
+localStorage.removeItem('admin_hidden_orders');
+}
+
+async function loadUsers(){
+const { data: ordersData }=await supabase.from('orders').select('*');
+let profiles=[];
+try{ const {data}=await supabase.from('profiles').select('*'); if(data) profiles=data; }catch(e){}
+let map=new Map();
+profiles.forEach(p=>{ map.set(p.email.toLowerCase(),{ email:p.email, full_name:p.full_name||p.email.split('@')[0], total_orders:(ordersData||[]).filter(o=>o.customer_email.toLowerCase()===p.email.toLowerCase()).length })});
+(ordersData||[]).forEach(o=>{ if(!map.has(o.customer_email.toLowerCase())) map.set(o.customer_email.toLowerCase(),{ email:o.customer_email, full_name:o.customer_email.split('@')[0], total_orders:(ordersData||[]).filter(x=>x.customer_email.toLowerCase()===o.customer_email.toLowerCase()).length }) });
+allUsersData=Array.from(map.values());
+document.getElementById('uCount').textContent=allUsersData.length;
+document.getElementById('uWithOrder').textContent=`• ${allUsersData.filter(u=>u.total_orders>0).length} with orders`;
+renderUsers(allUsersData);
+}
+function renderUsers(arr){
+document.getElementById('usersList').innerHTML=arr.map(u=>`<div class="userCard ${u.total_orders===0?'newUser':''}"><div style="flex:1"><b style="font-size:12px">${u.full_name}</b><div style="font-size:10px;color:#888">${u.email} • ${u.total_orders} orders</div></div><div style="display:flex;gap:3px"><button class="uBtn" style="background:#222;color:#f9c23c;border:1px solid #333" onclick="editUserEmail('${u.email}')">✏️</button><button class="uBtn" style="background:#f9c23c;color:#000" onclick="changePass('${u.email}')">🔑</button><button class="uBtn" style="background:#1a1a1a;color:#ff3b3b;border:1px solid #ff3b3b" onclick="deleteUser('${u.email}')">🗑️</button></div></div>`).join('');
+}
+window.addNewAccount=async function(){
+const fullName=document.getElementById('addFullName').value.trim();
+const email=document.getElementById('addEmail').value.trim();
+const password=document.getElementById('addPassword').value.trim();
+if(!fullName||!email||!password){ alert('Please fill all fields'); return; }
+const { data: { session: adminSession } }=await supabase.auth.getSession();
+try{
+const { data, error }=await supabase.auth.signUp({ email, password, options:{ data:{ full_name:fullName } } });
+if(error) throw error;
+if(data.user) await supabase.from('profiles').insert({ id:data.user.id, email, full_name:fullName });
+if(adminSession) await supabase.auth.setSession({ access_token:adminSession.access_token, refresh_token:adminSession.refresh_token });
+alert('✅ Account created: '+email);
+document.getElementById('addFullName').value=''; document.getElementById('addEmail').value=''; document.getElementById('addPassword').value='';
+loadUsers();
+}catch(e){ alert(e.message); if(adminSession) await supabase.auth.setSession({ access_token:adminSession.access_token, refresh_token:adminSession.refresh_token }); }
+}
+window.editUserEmail=async(oldEmail)=>{
+const ne=prompt('Enter new email:',oldEmail);
+if(!ne||ne===oldEmail) return;
+await supabase.from('profiles').update({email:ne}).eq('email',oldEmail);
+await supabase.from('orders').update({customer_email:ne}).eq('customer_email',oldEmail);
+loadUsers(); loadDashboard();
+}
+window.changePass=async(email)=>{
+if(confirm('Send password reset email to: '+email)){
+await supabase.auth.resetPasswordForEmail(email);
+alert('✅ Reset email sent to '+email);
+}
+}
+window.deleteUser=async(email)=>{
+if(!confirm('Delete user: '+email+'?\nThis will delete all their orders too.')) return;
+await supabase.from('profiles').delete().eq('email',email);
+await supabase.from('orders').delete().eq('customer_email',email);
+alert('✅ Deleted');
+loadUsers(); loadDashboard();
+}
+window.viewImage=async(fileName,fileUrl,orderId,status)=>{
+const modal=document.getElementById('imageModal');
+modal.style.display='flex';
+document.getElementById('modalFileName').textContent=fileName;
+document.getElementById('modalDownload').href=fileUrl||'#';
+const btn=document.getElementById('modalPrintBtn');
+if(status && !status.toLowerCase().includes('complet')){
+btn.style.display='inline-block';
+btn.onclick=()=>printOrder(orderId);
+} else btn.style.display='none';
+const img=document.getElementById('modalImage');
+const pdf=document.getElementById('modalPdf');
+if(fileName.toLowerCase().endsWith('.pdf')){
+img.style.display='none'; pdf.style.display='block'; pdf.src=fileUrl;
+} else {
+pdf.style.display='none'; img.style.display='block'; img.src=fileUrl;
+}
+}
+window.closeModal=()=>document.getElementById('imageModal').style.display='none';
+window.toggleEye=(id,btn)=>{ const inp=document.getElementById(id); inp.type=inp.type==='password'?'text':'password'; btn.textContent=inp.type==='password'?'👁️':'🙈'; }
+window.changeAdminPassword=async()=>{
+const np=document.getElementById('newPass').value;
+const cp=document.getElementById('confirmPass').value;
+if(!np||!cp){ alert('Please enter password'); return; }
+if(np!==cp){ alert('Passwords do not match'); return; }
+if(np.length<6){ alert('At least 6 characters'); return; }
+const {error}=await supabase.auth.updateUser({password:np});
+if(error) alert(error.message); else{ alert('✅ Password changed!'); document.getElementById('newPass').value=''; document.getElementById('confirmPass').value=''; }
+}
+window.saveSettings=()=>{ alert('✅ Settings saved!'); }
+window.switchTab=(tab)=>{
+document.querySelectorAll('.navBtn').forEach(b=>b.classList.remove('active'));
+document.getElementById('dashSection').style.display='none';
+document.getElementById('ordersPanel').style.display='none';
+document.getElementById('usersPanel').style.display='none';
+document.getElementById('settingsPanel').style.display='none';
+if(tab==='dash'){ document.getElementById('bDash').classList.add('active'); document.getElementById('dashSection').style.display='block'; document.getElementById('pageTitle').textContent='Dashboard'; renderRevenueChart(); }
+if(tab==='orders'){ document.getElementById('bOrders').classList.add('active'); document.getElementById('ordersPanel').style.display='block'; document.getElementById('pageTitle').textContent='Orders'; }
+if(tab==='users'){ document.getElementById('bUsers').classList.add('active'); document.getElementById('usersPanel').style.display='block'; document.getElementById('pageTitle').textContent='Users Profile'; loadUsers(); }
+if(tab==='settings'){ document.getElementById('bSet').classList.add('active'); document.getElementById('settingsPanel').style.display='block'; document.getElementById('pageTitle').textContent='Settings'; }
+};
+document.getElementById('userSearch').addEventListener('input',e=>{
+const q=e.target.value.toLowerCase();
+renderUsers(allUsersData.filter(u=>u.email.toLowerCase().includes(q)||u.full_name.toLowerCase().includes(q)));
+});
+document.getElementById('orderSearch').addEventListener('input',e=>{
+const q=e.target.value.toLowerCase();
+renderOrdersTable(allOrders.filter(o=>o.file_name.toLowerCase().includes(q)||o.customer_email.toLowerCase().includes(q)||(o.print_type||'').toLowerCase().includes(q)));
+});
+loadDashboard();
 </script>
 </body>
 </html>
